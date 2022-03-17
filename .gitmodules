@@ -1,0 +1,9 @@
+[submodule "pymor"]
+	path = pymor
+	url = https://github.com/TiKeil/pymor.git
+[submodule "gridlod"]
+	path = gridlod
+	url = https://github.com/TiKeil/gridlod.git
+[submodule "TSRBLOD"]
+	path = TSRBLOD
+	url = https://github.com/TiKeil/Two-scale-RBLOD.git
