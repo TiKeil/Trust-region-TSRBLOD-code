@@ -2,16 +2,17 @@
 # ~~~
 # This file is part of the paper:
 #
-#           " An Online Efficient Two-Scale Reduced Basis Approach
-#                for the Localized Orthogonal Decomposition "
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
 #
-#   https://github.com/TiKeil/Two-scale-RBLOD.git
+# by: Tim Keil and Mario Ohlberger
 #
-# Copyright 2021 all developers. All rights reserved.
-# License: licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 # Authors:
-#   Tim Keil
-#   Stephan Rave
+#   Tim Keil (2022)
 # ~~~
 ```
 
@@ -31,7 +32,6 @@ setup instructions for MacOS and Windows.
 Our setup instructions have successfully been tested on a fresh Ubuntu 20.04.2.0 LTS system.
 The actual experiments have been computed on the
 [PALMA II HPC cluster](<https://www.uni-muenster.de/IT/en/services/unterstuetzungsleistung/hpc/index.shtml>).
-For the concrete configurations we refer to the scripts in `submit_to_cluster`.
 
 # How to quickly find the data from the paper
 
@@ -107,7 +107,7 @@ cd scripts/test_scripts
 mpirun python minimal_test.py
 ```
 
-If this works fine (with a summary of some methods in the end), your setup is working well.
+If this works fine (with a summary of methods in the end), your setup is working well.
 
 Moreover, we provide further information
 on how to reconstruct the figures and tables from the paper.

@@ -1,15 +1,17 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "tba"
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
 #
-#   https://github.com/TiKeil/tba
+# by: Tim Keil and Mario Ohlberger
 #
-# Copyright 2019-2021 all developers. All rights reserved.
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 # Authors:
-#   Luca Mechelli (2020)
-#   Tim Keil      (2019 - 2021)
+#   Tim Keil (2022)
 # ~~~
 
 import numpy as np

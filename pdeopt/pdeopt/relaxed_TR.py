@@ -1,3 +1,19 @@
+# ~~~
+# This file is part of the paper:
+#
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Tim Keil (2022)
+# ~~~
+
 from pdeopt.TR import solve_optimization_subproblem_NewtonMethod
 from pdeopt.TR import solve_optimization_subproblem_BFGS
 from pdeopt.TR import enrichment_step, projection_onto_range

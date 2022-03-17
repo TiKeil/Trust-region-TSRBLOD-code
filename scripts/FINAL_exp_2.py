@@ -1,5 +1,22 @@
 #!/usr/bin/env python
-# coding: utf-8
+#  coding: utf-8
+
+#
+# ~~~
+# This file is part of the paper:
+#
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Tim Keil (2022)
+# ~~~
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -21,8 +38,7 @@ use_pool = True
 if use_pool:
     from pymor.parallel.mpi import MPIPool
     pool = MPIPool()
-    # store_in_tmp = '/scratch/tmp/t_keil02/lrblod/tmp5'
-    store_in_tmp = 'tmp'
+    store_in_tmp = 'tmp'  # <---- adjust this depending on your HPC system 
 else:
     from pymor.parallel.dummy import DummyPool
     pool = DummyPool()
@@ -196,7 +212,6 @@ optimization_methods = [
         # NCD-corrected from KMSOV'20
       #    'Method_RB', # TR-RB
         # localized BFGS
-          'Method_RBLOD',
           'Method_TSRBLOD',
     # R TR Methods
       'Method_R_TR'

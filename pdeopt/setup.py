@@ -1,16 +1,17 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "An adaptive projected Newton non-conforming dual approach
-#         for trust-region reduced basis approximation of PDE-constrained
-#                           parameter optimization"
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
 #
-#   https://github.com/TiKeil/Proj-Newton-NCD-corrected-TR-RB-for-pde-opt
+# by: Tim Keil and Mario Ohlberger
 #
-# Copyright 2019-2020 all developers. All rights reserved.
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 # Authors:
-#   Tim Keil (2020)
+#   Tim Keil (2022)
 # ~~~
 
 from setuptools import setup

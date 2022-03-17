@@ -1,5 +1,22 @@
 #!/usr/bin/env python
-# coding: utf-8
+#  coding: utf-8
+
+#
+# ~~~
+# This file is part of the paper:
+#
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Tim Keil (2022)
+# ~~~
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -21,8 +38,7 @@ use_pool = True
 if use_pool:
     from pymor.parallel.mpi import MPIPool
     pool = MPIPool()
-    # store_in_tmp = '/scratch/tmp/t_keil02/lrblod/tmp'
-    store_in_tmp = 'tmp'
+    store_in_tmp = 'tmp'  # <---- adjust this depending on your HPC system 
 else:
     from pymor.parallel.dummy import DummyPool
     pool = DummyPool()
@@ -195,7 +211,6 @@ optimization_methods = [
         # NCD-corrected from KMSOV'20
       #    'Method_RB', # TR-RB
         # localized BFGS
-          'Method_RBLOD',
           'Method_TSRBLOD',
     # R TR Methods
       'Method_R_TR'
@@ -417,6 +432,9 @@ if ('Method_R_TR' in optimization_methods and 'Method_RB' in optimization_method
     # print_RB_result(R_TRNCDRB_dict)
     print_iterations_and_walltime(len(times_full_ntr8_actual), times_full_ntr8_actual[-1])
     print('mu_error: ', mu_error_ntr8_actual[-1])
+    subproblem_time = data_ntr8['total_subproblem_time']
+    print(f'further timings:\n subproblem:  {subproblem_time:.3f}')
+
 counter.reset_counters()
 
 tic = time.time()
@@ -474,6 +492,8 @@ if 'Method_RB' in optimization_methods or 'All' in optimization_methods:
     # print_RB_result(TRNCDRB_dict)
     print_iterations_and_walltime(len(times_full_8_actual), times_full_8_actual[-1])
     print('mu_error: ', mu_error_8_actual[-1])
+    subproblem_time = data_8['total_subproblem_time']
+    print(f'further timings:\n subproblem:  {subproblem_time:.3f}')
 lod_counter.reset_counters()
 
 from pdeopt.RBLOD_reductor import QuadraticPdeoptStationaryCoerciveLODReductor

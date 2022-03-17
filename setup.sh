@@ -21,8 +21,8 @@ git submodule update --init --recursive
 
 # initialize the virtualenv
 export BASEDIR="${PWD}"
-python3 -m venv venv_new
-source venv_new/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 
 # install python dependencies into the virtualenv
 cd "${BASEDIR}"
@@ -41,6 +41,8 @@ cd "${BASEDIR}"
 cd TSRBLOD/rblod && pip install -e .
 cd "${BASEDIR}"
 cd TSRBLOD/perturbations-for-2d-data && pip install -e .
+cd "${BASEDIR}"
+cd scripts && mkdir tmp
 
 cd "${BASEDIR}"
 echo

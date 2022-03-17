@@ -17,6 +17,7 @@ cycler==0.10.0
 Cython==0.29.17
 decorator==4.4.2
 defusedxml==0.6.0
+dill
 diskcache==4.1.0
 distlib==0.3.0
 distro==1.4.0

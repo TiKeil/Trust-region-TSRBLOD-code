@@ -1,3 +1,19 @@
+# ~~~
+# This file is part of the paper:
+#
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Tim Keil (2022)
+# ~~~
+
 import numpy as np
 import os
 import dill
@@ -285,7 +301,7 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             projected_product = self.project_product(primal_lod_basis)
             print(f' ... enrichment completed... length of two scale bases are '
                   f'{len(primal_lod_basis), len(dual_lod_basis)}')
-            print(f' length of corrector bases are {self.rom_sizeT}')
+            # print(f' length of corrector bases are {self.rom_sizeT}')
             return self.fom.with_(estimators=two_scale_estimator, optional_forward_model=self.rom_two_scale,
                                   dual_model=self.dual_reduced_optional_forward_model, fom=self.fom,
                                   evaluation_counter=evaluation_counter,

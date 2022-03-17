@@ -1,5 +1,22 @@
 #!/usr/bin/env python
-# coding: utf-8
+#  coding: utf-8
+
+#
+# ~~~
+# This file is part of the paper:
+#
+#           "A relaxed localized trust-region reduced basis approach for
+#                      optimization of multiscale problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright 2019-2022 all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Tim Keil (2022)
+# ~~~
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -34,7 +51,7 @@ print_on_ranks = True
     Variables for the experiment and discretization
 '''
 
-coarse_elements = 2
+coarse_elements = 4
 n = 20
 diameter = np.sqrt(2)/n
 
@@ -155,7 +172,7 @@ print(f"max fine dofs per patch:    {Patch(gridlod_model.world, gridlod_model.k,
 
 seed = 1                   # random seed for the starting value
 radius = 0.1               # TR radius 
-FOC_tolerance = 1e-3       # tau_FOC
+FOC_tolerance = 1e-4       # tau_FOC
 sub_tolerance = 1e-8       # tau_sub
 safety_tol = 1e-14         # Safeguard, to avoid running the optimizer for really small difference in digits
 max_it = 60                # Maximum number of iteration for the TR algorithm
@@ -189,13 +206,12 @@ mu = parameter_space.sample_randomly(1, seed=seed)[0]
 
 optimization_methods = [
     # FOM Method
-     # 'BFGS',
-     # 'BFGS_LOD',
+      'BFGS',
+      'BFGS_LOD',
     # TR-RB
         # NCD-corrected from KMSOV'20
-      #    'Method_RB', # TR-RB
+          'Method_RB', # TR-RB
         # localized BFGS
-          'Method_RBLOD',
           'Method_TSRBLOD',
     # R TR Methods
       'Method_R_TR'
@@ -820,6 +836,10 @@ if pool is not None:
 # ## Evaluations of the methods
 
 from pdeopt.tools import print_RB_result, print_RBLOD_result, print_iterations_and_walltime
+
+print("\n________________________________________________________________________\n")
+print("                                 SUMMARY                                    ")
+print("\n________________________________________________________________________\n")
 
 if 'BFGS' in optimization_methods or 'All' in optimization_methods:
     print("\n________________ FOM BFGS________________________\n")
