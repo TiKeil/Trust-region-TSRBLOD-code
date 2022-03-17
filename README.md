@@ -104,7 +104,7 @@ cd Trust-region-TSRBLOD-code
 You can make sure your that setup is complete by running the minimal test script
 ```
 cd scripts/test_scripts
-./minimal_test.sh
+mpirun python minimal_test.py
 ```
 
 If this works fine (with a summary of some methods in the end), your setup is working well.
