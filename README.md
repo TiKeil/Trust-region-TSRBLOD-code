@@ -37,7 +37,7 @@ The actual experiments have been computed on the
 
 We provide information on how to relate the output files to the figures and tables in the paper.
 All output files and figures are stored in `scripts/test_outputs`.
-Note that the outputs are verbose outputs compared to the ones that we present in the paper,
+Note that the outputs are verbose outputs compared to the ones that we summarized in the respective tables in the paper,
 which is also the reason why we do not provide scripts for constructing the error plots and
 tables from the paper.
 
@@ -109,10 +109,7 @@ mpirun python minimal_test.py
 
 If this works fine (with a summary of methods in the end), your setup is working well.
 
-Moreover, we provide further information
-on how to reconstruct the figures and tables from the paper.
-Please note that these shell scripts will produce verbose outputs.
-The above mentioned output files in `scripts/test_outputs` are a minimal version of this.
+Moreover, in the respective `test_outputs` directory, all figures from the paper can directly be constructed with the respective files.
 For executing Python scripts, you need to activate the virtual environment by
 
 ```

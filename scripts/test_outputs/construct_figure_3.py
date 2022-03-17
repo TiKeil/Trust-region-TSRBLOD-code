@@ -44,8 +44,6 @@ ax.grid(which='minor', color='k', linestyle='-', linewidth=0.5)
 cb = plt.colorbar()
 cb.ax.tick_params(labelsize=14)
 plt.tight_layout()
-plt.savefig('basis_sizes_2.png', bbox_inches='tight')
-# tikzplotlib.save('optional_enrichment.tex')
 
 N = 40
 plt.figure()
@@ -175,7 +173,5 @@ ax.grid(which='minor', color='k', linestyle='-', linewidth=0.5)
 
 cb = plt.colorbar()
 cb.ax.tick_params(labelsize=14)
-# tikzplotlib.save('affine_decomposition.tex')
 plt.tight_layout()
-plt.savefig('affine_decomp_2.png', bbox_inches='tight')
 plt.show()
