@@ -634,9 +634,9 @@ def TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None, extensi
                     opt_rom, reductor, out_1, out_2 = enrichment_step(mu_kp1, reductor, pool=pool)
             else:
                 if TR_parameters['opt_method'] == 'AdaptiveTaylor_Newton':
-                    new_rom, new_reductor, u, p = enrichment_step(mu_kp1, reductor, adaptive_taylor=adaptive_taylor)
+                    opt_rom, reductor, u, p = enrichment_step(mu_kp1, reductor, adaptive_taylor=adaptive_taylor)
                 else:
-                    new_rom, new_reductor, u, p = enrichment_step(mu_kp1, reductor, pool=pool)
+                    opt_rom, reductor, u, p = enrichment_step(mu_kp1, reductor, pool=pool)
 
             model_has_been_enriched = True
             JFE_list.append(reductor.fom.output_functional_hat(mu_kp1,u))

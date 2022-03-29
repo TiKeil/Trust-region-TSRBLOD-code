@@ -50,8 +50,8 @@ print_on_ranks = True
     Variables for the experiment and discretization
 '''
 
-coarse_elements = 10
-n = 100
+coarse_elements = 20
+n = 1200
 diameter = np.sqrt(2)/n
 
 two_scale_estimator_for_RBLOD = False
