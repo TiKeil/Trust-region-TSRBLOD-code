@@ -206,12 +206,13 @@ mu = parameter_space.sample_randomly(1, seed=seed)[0]
 
 optimization_methods = [
     # FOM Method
-     # 'BFGS',
+    #  'BFGS',
       'BFGS_LOD',
     # TR-RB
         # NCD-corrected from KMSOV'20
-      #    'Method_RB', # TR-RB
+    #      'Method_RB', # TR-RB
         # localized BFGS
+          'Method_RBLOD',
           'Method_TSRBLOD',
     # R TR Methods
       'Method_R_TR'
