@@ -152,7 +152,7 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
             no_estimation = True
         else:
             no_estimation = False
-        
+
         tic_ = time.perf_counter()
         if TR_parameters['opt_method'] == "BFGSMethod":
             mu_kp1, Jcp, j, J_kp1, _, mus = solve_optimization_subproblem_BFGS(opt_rom, parameter_space, mu_k,

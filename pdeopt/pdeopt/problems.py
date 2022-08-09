@@ -48,10 +48,9 @@ class RandomFieldFunction(Function):
         self.size = np.array(bounding_box[1] - self.lower_left)
 
     def evaluate(self, x, mu=None):
-        indices = np.maximum(np.floor((x - self.lower_left) * np.array(self.diffusion_field.shape) /
-                                      self.size).astype(int), 0)
+        indices = np.maximum(np.floor((x - self.lower_left) * np.array(self.diffusion_field.shape) / self.size).astype(int), 0)
         F = self.diffusion_field[np.minimum(indices[..., 0], self.diffusion_field.shape[0] - 1),
-                         np.minimum(indices[..., 1], self.diffusion_field.shape[1] - 1)]
+                                 np.minimum(indices[..., 1], self.diffusion_field.shape[1] - 1)]
         return F
 
 class DiffusionFieldFunction(Function):

@@ -23,6 +23,7 @@ from pymor.models.basic import StationaryModel
 from pymor.algorithms.gram_schmidt import gram_schmidt
 from pymor.operators.constructions import VectorOperator, LincombOperator
 from pymor.operators.constructions import IdentityOperator
+from pymor.operators.block import BlockOperator
 from pymor.operators.interface import Operator
 
 class QuadraticPdeoptStationaryModel(StationaryModel):
@@ -547,15 +548,15 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
             coefficients = list(self.output_functional_dict[f'd_u_linear_part{suffix}{ts_suffix}'].coefficients)
         else:
             operators = [self.output_functional_dict[f'd_u_linear_part{suffix}{ts_suffix}']]
-            coefficients = [1]
-        operators = [op.with_(name=op.name + '_linear_part') for op in operators]
+            coefficients = [1.]
+        # operators = [op.with_(name=op.name + '_linear_part') for op in operators]
         if isinstance(self.output_functional_dict[f'd_u_bilinear_part{suffix}{ts_suffix}'], LincombOperator):
             operators.extend([VectorOperator(op.apply(U)) for op in
                           self.output_functional_dict[f'd_u_bilinear_part{suffix}{ts_suffix}'].operators])
             coefficients.extend(self.output_functional_dict[f'd_u_bilinear_part{suffix}{ts_suffix}'].coefficients)
         else:
             operators.append(VectorOperator(self.output_functional_dict[f'd_u_bilinear_part{suffix}{ts_suffix}'].apply(U, mu)))
-            coefficients.append(1)
+            coefficients.append(1.)
         if coarse_model or (self.optional_forward_model is not None and not self.optional_forward_model.use_fine_mesh):
             dual_rhs_operator = LincombOperator(operators, coefficients)
             return dual_rhs_operator
@@ -571,7 +572,15 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
 
     def _add_primal_to_parameter(self, mu, U):
         assert mu is not None
-        return mu.with_(basis_coefficients=U.to_numpy()[0])
+        if isinstance(self.primal_model.operator, BlockOperator):
+            # this is to detect that we are in the LRBMS case
+            # TODO: CHECK WHETHER THIS IS THE CORRECT APPROACH
+            # TODO: THIS ASSUMES THAT THE BASIS COEFFICIENTS ARE FIRST !!!
+            mu_array = np.append(U.to_numpy(), mu.to_numpy())
+            new_mu = self.dual_model.parameters.parse(mu_array)
+        else:
+            new_mu = mu.with_(basis_coefficients=U.to_numpy()[0])
+        return new_mu
 
     def _add_dual_to_parameter(self, mu, P):
         assert mu is not None
