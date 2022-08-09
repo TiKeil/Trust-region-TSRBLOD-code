@@ -409,11 +409,21 @@ def solve_optimization_subproblem_NewtonMethod(opt_model, parameter_space, mu_k_
 def enrichment_step(mu, reductor, adaptive_taylor=False, U = None, P = None, pool=None):
     print(f"enriching for mu: {mu}")
     if adaptive_taylor:
-        new_reductor = deepcopy(reductor)
+        try:
+            new_reductor = deepcopy(reductor)
+        except:
+            # TODO: fix the necessity to copy
+            print('deepcopy failed... cannot go back to former reductor')
+            new_reductor = reductor
         out_1, out_2 = new_reductor.extend_adaptive_taylor(mu, U = U, P = P)
         opt_rom = new_reductor.reduce()
     else:
-        new_reductor = deepcopy(reductor)
+        try:
+            new_reductor = deepcopy(reductor)
+        except:
+            # TODO: fix the necessity to copy
+            print('deepcopy failed... cannot go back to former reductor')
+            new_reductor = reductor
         # counter, pool and gridlod_model must stay the same !!
         if isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
             optional_forward_model = reductor.fom.optional_forward_model
