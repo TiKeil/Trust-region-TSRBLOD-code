@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#  coding: utf-8
+#   coding: utf-8
 
 #
 # ~~~
@@ -61,6 +61,8 @@ use_FEM = True
 #use_FEM = False
 use_fine_mesh = True
 #use_fine_mesh = False
+# use_LOD = True
+use_LOD = False
 
 # skip_estimator = False
 skip_estimator = True
@@ -118,12 +120,12 @@ counter = EvaluationCounter()
 lod_counter = LODEvaluationCounter()
 
 print(f'Discretizing grid with diameter {diameter:.2e}')
-
-gridlod_model, _, _, _, _ = discretize_gridlod(global_problem, diameter, coarse_elements, pool=pool,
-                                               counter=lod_counter, save_correctors=save_correctors,
-                                               store_in_tmp=store_in_tmp, use_fine_mesh=use_fine_mesh,
-                                               aFine_constructor=local_problem_constructer,
-                                               print_on_ranks=print_on_ranks)
+if use_LOD:
+    gridlod_model, _, _, _, _ = discretize_gridlod(global_problem, diameter, coarse_elements, pool=pool,
+                                                   counter=lod_counter, save_correctors=save_correctors,
+                                                   store_in_tmp=store_in_tmp, use_fine_mesh=use_fine_mesh,
+                                                   aFine_constructor=local_problem_constructer,
+                                                   print_on_ranks=print_on_ranks)
 
 if not use_fine_mesh:
     u_d = gridlod_model.solve(mu_d, pool=pool)
@@ -132,12 +134,13 @@ else:
     u_d = None
     mu_for_u_d = mu_d
 
-gridlod_opt_fom, data, mu_bar = discretize_quadratic_pdeopt_with_gridlod(
-    global_problem, diameter, coarse_elements, weights.copy(), domain_of_interest,
-    desired_temperature=None, mu_for_u_d=mu_for_u_d, mu_for_tikhonov=mu_for_tikhonov,
-    pool=pool, counter=lod_counter, save_correctors=save_correctors, store_in_tmp=store_in_tmp,
-    coarse_J=coarse_J, use_fine_mesh=use_fine_mesh, aFine_constructor=local_problem_constructer,
-    u_d=u_d, print_on_ranks=print_on_ranks)
+if use_LOD:
+    gridlod_opt_fom, data, mu_bar = discretize_quadratic_pdeopt_with_gridlod(
+        global_problem, diameter, coarse_elements, weights.copy(), domain_of_interest,
+        desired_temperature=None, mu_for_u_d=mu_for_u_d, mu_for_tikhonov=mu_for_tikhonov,
+        pool=pool, counter=lod_counter, save_correctors=save_correctors, store_in_tmp=store_in_tmp,
+        coarse_J=coarse_J, use_fine_mesh=use_fine_mesh, aFine_constructor=local_problem_constructer,
+        u_d=u_d, print_on_ranks=print_on_ranks)
 
 if use_FEM:
     opt_fom, data, mu_bar = discretize_quadratic_NCD_pdeopt_stationary_cg(problem,
@@ -150,20 +153,20 @@ if use_FEM:
 
     ### counting evaluations in opt_fom
     opt_fom = opt_fom.with_(evaluation_counter=counter)
-else:
+elif use_LOD:
     opt_fom = gridlod_opt_fom
+else:
+    assert 0, "not method was picked"
 
 print('\nInformation on the grids:')
 print(data['grid'])
 print()
 print(f"Coarse FEM mesh:            {coarse_elements} x {coarse_elements}")
 print(f"Fine FEM mesh:              {n} x {n}")
-print(f"k:                          {gridlod_model.k}")
-print(f"|log H|:                    {np.abs(np.log(np.sqrt(2) * 1./coarse_elements)):.2f}")
-print(f"number of fine dofs         {gridlod_model.world.NpFine}")
-middle_coarse_index = np.prod(gridlod_model.world.NWorldCoarse)//2 + gridlod_model.world.NWorldCoarse[0]//2
-from gridlod.world import Patch
-print(f"max fine dofs per patch:    {Patch(gridlod_model.world, gridlod_model.k, middle_coarse_index).len_fine}\n")
+if use_LOD:
+    print(f"k:                          {gridlod_model.k}")
+    print(f"|log H|:                    {np.abs(np.log(np.sqrt(2) * 1./coarse_elements)):.2f}")
+    print(f"number of fine dofs         {gridlod_model.world.NpFine}")
 
 '''
     Variables for the optimization algorithms
@@ -171,7 +174,8 @@ print(f"max fine dofs per patch:    {Patch(gridlod_model.world, gridlod_model.k,
 
 seed = 1                   # random seed for the starting value
 radius = 0.1               # TR radius 
-FOC_tolerance = 1e-3       # tau_FOC
+FEM_FOC_tolerance = 1e-4   # tau_FOC for FEM
+LOD_FOC_tolerance = 1e-6   # tau_FOC for LOD
 sub_tolerance = 1e-8       # tau_sub
 safety_tol = 1e-14         # Safeguard, to avoid running the optimizer for really small difference in digits
 max_it = 60                # Maximum number of iteration for the TR algorithm
@@ -206,13 +210,13 @@ mu = parameter_space.sample_randomly(1, seed=seed)[0]
 optimization_methods = [
     # FOM Method
       'BFGS',
-      'BFGS_LOD',
+    #  'BFGS_LOD',
     # TR-RB
         # NCD-corrected from KMSOV'20
           'Method_RB', # TR-RB
         # localized BFGS
-          'Method_RBLOD',
-          'Method_TSRBLOD',
+    #      'Method_RBLOD',
+    #      'Method_TSRBLOD',
     # R TR Methods
       'Method_R_TR'
 ]
@@ -227,31 +231,39 @@ if not add_error_residual:
     # filter the methods
     optimization_methods = [string for string in optimization_methods if (string not in ['Method_TSRBLOD'])]
 
-parameters = gridlod_opt_fom.parameters
+if use_LOD:
+    parameters = gridlod_opt_fom.parameters
+else:
+    parameters = opt_fom.parameters
+
 if mu_d is not None:
     mu_opt = mu_d
 else:
     assert 0, 'compute mu_opt in advance'
 
 mu_opt_as_array = mu_opt.to_numpy()
-J_opt_LOD = gridlod_opt_fom.output_functional_hat(mu_opt, pool=pool)
 print('Optimal parameter: ', mu_opt_as_array)
 print('Norm mu_d: ', norm_mu_d)
 if use_FEM:
     J_opt = opt_fom.output_functional_hat(mu_opt)
     J_start = opt_fom.output_functional_hat(mu)
     print('Optimal J FEM: ', J_opt)
-print('Optimal J LOD: ', J_opt_LOD)
+if use_LOD:
+    J_opt_LOD = gridlod_opt_fom.output_functional_hat(mu_opt, pool=pool)
+    print('Optimal J LOD: ', J_opt_LOD)
+    if use_FEM:
+        print('FEM Error in J LOD: ', J_opt_LOD - J_opt)
 
 print()
 print('Starting parameter: ', mu.to_numpy())
-J_start_LOD = gridlod_opt_fom.output_functional_hat(mu, pool=pool)
+if use_LOD:
+    J_start_LOD = gridlod_opt_fom.output_functional_hat(mu, pool=pool)
 if use_FEM:
     print('Starting J FEM: ', J_start)
 else:
+    print('Starting J LOD: ', J_start_LOD)
     J_start = J_start_LOD
     J_opt = J_opt_LOD
-print('Starting J LOD: ', J_start_LOD)
 
 print('\nParameter space: ', mu_opt.parameters)
 
@@ -308,7 +320,7 @@ from pdeopt.tools import compute_errors
 from pdeopt.TR import solve_optimization_subproblem_BFGS
 
 counter.reset_counters()
-TR_parameters = {'radius': 1.e18, 'sub_tolerance': FOC_tolerance, 
+TR_parameters = {'radius': 1.e18, 'sub_tolerance': FEM_FOC_tolerance,
                  'max_iterations_subproblem': 500,
                  'starting_parameter': mu,
                  'epsilon_i': epsilon_i,
@@ -321,7 +333,7 @@ if 'BFGS' in optimization_methods or 'All' in optimization_methods:
     print("\n________________ FOM BFGS________________________\n")
     muoptfom,_,_,_, times_FOM, mus_FOM, Js_FOM, FOC_FOM = solve_optimization_subproblem_BFGS(opt_fom,
                                                     parameter_space, mu, TR_parameters, timing=True, FOM=True)
-    times_full_FOM, J_error_FOM, mu_error_FOM, FOC = compute_errors(opt_fom, parameter_space, J_start, J_opt, mu, mu_opt_as_array, 
+    times_full_FOM, J_error_FOM, mu_error_FOM, FOC = compute_errors(opt_fom, parameter_space, J_start, J_opt, mu, mu_opt_as_array,
                                                mus_FOM, Js_FOM, times_FOM, 0, FOC_FOM)
     times_full_FOM = times_full_FOM[1:]
 
@@ -330,10 +342,10 @@ if 'BFGS' in optimization_methods or 'All' in optimization_methods:
     BFGS_dict = counter.print_result(True)
     # print_RB_result(BFGS_dict)
     print_iterations_and_walltime(len(times_full_FOM), times_full_FOM[-1])
-    print('mu_error: ', mu_error_FOM[-1]) 
+    print('mu_error: ', mu_error_FOM[-1])
 counter.reset_counters()
 
-TR_parameters = {'radius': 1.e18, 'sub_tolerance': FOC_tolerance, 
+TR_parameters = {'radius': 1.e18, 'sub_tolerance': LOD_FOC_tolerance,
                  'max_iterations_subproblem': 500,
                  'starting_parameter': mu,
                  'epsilon_i': epsilon_i,
@@ -376,7 +388,11 @@ from pymor.parameters.functionals import MinThetaParameterFunctional
 set_defaults({'pymor.operators.constructions.induced_norm.raise_negative': False})
 set_defaults({'pymor.operators.constructions.induced_norm.tol': 1e-20})
 
-ce = MinThetaParameterFunctional(gridlod_opt_fom.primal_model.operator.coefficients, mu_bar)
+if use_LOD:
+    ce = MinThetaParameterFunctional(gridlod_opt_fom.primal_model.operator.coefficients, mu_bar)
+else:
+    ce = MinThetaParameterFunctional(opt_fom.primal_model.operator.coefficients, mu_bar)
+
 
 # ## NCD corrected BFGS Method (KMSOV'20)
 counter.reset_counters()
@@ -392,9 +408,9 @@ if ('Method_R_TR' in optimization_methods and 'Method_RB' in optimization_method
 
     RBbasis, dual_RBbasis = build_initial_basis(
         opt_fom, params, build_sensitivities=False)
-    
-    pdeopt_reductor = QuadraticPdeoptStationaryCoerciveReductor(opt_fom, 
-                                                RBbasis, dual_RBbasis, 
+
+    pdeopt_reductor = QuadraticPdeoptStationaryCoerciveReductor(opt_fom,
+                                                RBbasis, dual_RBbasis,
                                                 opt_product=opt_fom.opt_product,
                                                 coercivity_estimator=ce,
                                                 reductor_type=relaxed_reductor_type, mu_bar=mu_bar)
@@ -405,23 +421,23 @@ if ('Method_R_TR' in optimization_methods and 'Method_RB' in optimization_method
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                  'safety_tolerance': safety_tol,
-                 'radius': 0.1, 'FOC_tolerance': FOC_tolerance, 
+                 'radius': 0.1, 'FOC_tolerance': FEM_FOC_tolerance,
                  'sub_tolerance': sub_tolerance,
-                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub, 
+                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                  'max_iterations_armijo': max_it_arm,
-                 'initial_step_armijo': init_step_armijo, 
-                 'armijo_alpha': armijo_alpha, 
-                 'epsilon_i': epsilon_i, 
+                 'initial_step_armijo': init_step_armijo,
+                 'armijo_alpha': armijo_alpha,
+                 'epsilon_i': epsilon_i,
                  'control_mu': control_mu,
-                 'starting_parameter': mu, 
+                 'starting_parameter': mu,
                  'opt_method': 'BFGSMethod'}
 
-    extension_params = {'Enlarge_radius': True, 'timings': True, 
+    extension_params = {'Enlarge_radius': True, 'timings': True,
                         'opt_fom': opt_fom, 'return_data_dict': True}
 
-    mus_ntr8, times_ntr8, Js_ntr8, FOC_ntr8, data_ntr8 = Relaxed_TR_algorithm(opt_rom, pdeopt_reductor, parameter_space, 
+    mus_ntr8, times_ntr8, Js_ntr8, FOC_ntr8, data_ntr8 = Relaxed_TR_algorithm(opt_rom, pdeopt_reductor, parameter_space,
                                                 TR_parameters, extension_params, skip_estimator=skip_estimator)
-    
+
     times_full_ntr8_actual, J_error_ntr8_actual, mu_error_ntr8_actual, FOC_ntr8_actual = compute_errors(
         opt_fom, parameter_space, J_start, J_opt, mu, mu_opt_as_array, mus_ntr8, Js_ntr8, times_ntr8, tictoc, FOC_ntr8,
         pool=pool)
@@ -449,36 +465,36 @@ if 'Method_RB' in optimization_methods or 'All' in optimization_methods:
 
     RBbasis, dual_RBbasis = build_initial_basis(
         opt_fom, params, build_sensitivities=False)
-    
-    pdeopt_reductor = QuadraticPdeoptStationaryCoerciveReductor(opt_fom, 
-                                                RBbasis, dual_RBbasis, 
+
+    pdeopt_reductor = QuadraticPdeoptStationaryCoerciveReductor(opt_fom,
+                                                RBbasis, dual_RBbasis,
                                                 opt_product=opt_fom.opt_product,
                                                 coercivity_estimator=ce,
                                                 reductor_type=reductor_type, mu_bar=mu_bar)
 
     opt_rom = pdeopt_reductor.reduce()
-    
+
     tictoc = time.time() - tic
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                  'safety_tolerance': safety_tol,
-                 'radius': radius, 'FOC_tolerance': FOC_tolerance, 
+                 'radius': radius, 'FOC_tolerance': FEM_FOC_tolerance,
                  'sub_tolerance': sub_tolerance,
-                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub, 
+                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                  'max_iterations_armijo': max_it_arm,
-                 'initial_step_armijo': init_step_armijo, 
-                 'armijo_alpha': armijo_alpha, 
-                 'epsilon_i': epsilon_i, 
+                 'initial_step_armijo': init_step_armijo,
+                 'armijo_alpha': armijo_alpha,
+                 'epsilon_i': epsilon_i,
                  'control_mu': control_mu,
-                 'starting_parameter': mu, 
+                 'starting_parameter': mu,
                  'opt_method': 'BFGSMethod'}
 
-    extension_params = {'Enlarge_radius': True, 'timings': True, 
+    extension_params = {'Enlarge_radius': True, 'timings': True,
                         'opt_fom': opt_fom, 'return_data_dict': True}
 
-    mus_8, times_8, Js_8, FOC_8, data_8 = TR_algorithm(opt_rom, pdeopt_reductor, parameter_space, 
+    mus_8, times_8, Js_8, FOC_8, data_8 = TR_algorithm(opt_rom, pdeopt_reductor, parameter_space,
                                                 TR_parameters, extension_params)
-    
+
     times_full_8_actual, J_error_8_actual, mu_error_8_actual, FOC_8_actual = compute_errors(
         opt_fom, parameter_space, J_start, J_opt, mu, mu_opt_as_array, mus_8, Js_8, times_8, tictoc, FOC_8, pool=pool)
 
@@ -522,7 +538,7 @@ if ('Method_R_TR' in optimization_methods and 'Method_RBLOD' in optimization_met
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                      'safety_tolerance': safety_tol,
-                     'radius': radius, 'FOC_tolerance': FOC_tolerance,
+                     'radius': radius, 'FOC_tolerance': LOD_FOC_tolerance,
                      'sub_tolerance': sub_tolerance,
                      'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                      'max_iterations_armijo': max_it_arm,
@@ -576,7 +592,7 @@ if 'Method_RBLOD' in optimization_methods or 'All' in optimization_methods:
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                      'safety_tolerance': safety_tol,
-                     'radius': radius, 'FOC_tolerance': FOC_tolerance,
+                     'radius': radius, 'FOC_tolerance': LOD_FOC_tolerance,
                      'sub_tolerance': sub_tolerance,
                      'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                      'max_iterations_armijo': max_it_arm,
@@ -614,7 +630,7 @@ tic = time.time()
 if ('Method_R_TR' in optimization_methods and 'Method_TSRBLOD' in optimization_methods) or 'All' in optimization_methods:
     print("\n________________Relaxed TR TSRBLOD BFGS_____________________\n")
     relaxed_reductor_type = 'non_assembled'
-    
+
     pdeopt_reductor = QuadraticPdeoptStationaryCoerciveLODReductor(gridlod_opt_fom, f,
                                                                    opt_product=gridlod_opt_fom.opt_product,
                                                                    coercivity_estimator=ce,
@@ -635,7 +651,7 @@ if ('Method_R_TR' in optimization_methods and 'Method_TSRBLOD' in optimization_m
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                      'safety_tolerance': safety_tol,
-                     'radius': radius, 'FOC_tolerance': FOC_tolerance,
+                     'radius': radius, 'FOC_tolerance': LOD_FOC_tolerance,
                      'sub_tolerance': sub_tolerance,
                      'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                      'max_iterations_armijo': max_it_arm,
@@ -691,30 +707,22 @@ if 'Method_TSRBLOD' in optimization_methods or 'All' in optimization_methods:
 
     opt_rom = pdeopt_reductor.reduce()
 
-    # print(opt_fom.solve_dual(mu).norm())
-    # print(gridlod_opt_fom.solve_dual(mu).norm())
-    # print(pdeopt_reductor.dual_two_scale_reductor.reconstruct_partial(opt_rom.solve_dual(mu)).norm())
-    #
-    # print(opt_fom.solve(mu).norm())
-    # print(gridlod_opt_fom.solve(mu).norm())
-    # print(pdeopt_reductor.two_scale_reductor.reconstruct_partial(opt_rom.solve(mu)).norm())
-    # assert 0
     tictoc = time.time() - tic
 
     TR_parameters = {'Qian-Grepl_subproblem': Qian_Grepl_subproblem, 'beta': beta,
                  'safety_tolerance': safety_tol,
-                 'radius': radius, 'FOC_tolerance': FOC_tolerance, 
+                 'radius': radius, 'FOC_tolerance': LOD_FOC_tolerance,
                  'sub_tolerance': sub_tolerance,
-                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub, 
+                 'max_iterations': max_it, 'max_iterations_subproblem': max_it_sub,
                  'max_iterations_armijo': max_it_arm,
-                 'initial_step_armijo': init_step_armijo, 
-                 'armijo_alpha': armijo_alpha, 
-                 'epsilon_i': epsilon_i, 
+                 'initial_step_armijo': init_step_armijo,
+                 'armijo_alpha': armijo_alpha,
+                 'epsilon_i': epsilon_i,
                  'control_mu': control_mu,
-                 'starting_parameter': mu, 
+                 'starting_parameter': mu,
                  'opt_method': 'BFGSMethod'}
 
-    extension_params = {'Enlarge_radius': True, 'timings': True, 
+    extension_params = {'Enlarge_radius': True, 'timings': True,
                         'opt_fom': opt_fom, 'return_data_dict': True}
 
     mus_8_tsloc, times_8_tsloc, Js_8_tsloc, FOC_8_tsloc, data_8_tsloc = TR_algorithm(
@@ -767,7 +775,6 @@ if 'Method_TSRBLOD' in optimization_methods or 'All' in optimization_methods:
 if ('Method_R_TR' in optimization_methods and 'Method_TSRBLOD' in optimization_methods) in optimization_methods or 'All' in optimization_methods:
     plt.semilogy(times_full_ntr_actual,J_error_ntr_actual,'o-', label='R TR-TSRBLOD BFGS')
 
-    
 plt.xlabel('time in seconds [s]')
 plt.ylabel('True optimization error of the output functional')
 plt.grid()
@@ -825,7 +832,7 @@ if 'Method_TSRBLOD' in optimization_methods or 'All' in optimization_methods:
     plt.semilogy(times_full_8_tsloc_actual,mu_error_8_tsloc_actual,'o-', label='TR-TSRBLOD BFGS')
 if ('Method_R_TR' in optimization_methods and 'Method_TSRBLOD' in optimization_methods) or 'All' in optimization_methods:
     plt.semilogy(times_full_ntr_actual,mu_error_ntr_actual,'o-', label='R TR-TSRBLOD BFGS')
-    
+
 plt.xlabel('time in seconds [s]')
 plt.ylabel('Mu error')
 #plt.xlim([-1,100])
@@ -836,7 +843,8 @@ tikzplotlib.save(f'{store_in_tmp}/mu_error.tex')
 
 if pool is not None:
    del pool
-   del gridlod_model, pdeopt_reductor, gridlod_opt_fom
+   if use_LOD:
+       del gridlod_model, pdeopt_reductor, gridlod_opt_fom
 
 # ## Evaluations of the methods
 
