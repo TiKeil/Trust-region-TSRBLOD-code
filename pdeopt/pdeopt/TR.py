@@ -38,12 +38,13 @@ def projection_onto_range(parameter_space, mu):
                 new_mu.append(mu[key][j])
     return parameter_space.parameters.parse(new_mu)
 
+
 def active_and_inactive_sets(parameter_space, mu, epsilon):
 
     Act = []
 
     ranges = parameter_space.ranges
-    for (key,size) in sorted(parameter_space.parameters.items()):
+    for (key, size) in sorted(parameter_space.parameters.items()):
         range_ = ranges[key]
         for j in range(size):
             if mu[key][j] - range_[0] <= epsilon:
@@ -59,13 +60,14 @@ def active_and_inactive_sets(parameter_space, mu, epsilon):
     return Act, Inact
 
 
-def armijo_rule(opt_model, parameter_space, TR_parameters, mu_i, Ji, direction, pool=None, skip_estimator=False):
+def armijo_rule(opt_model, parameter_space, TR_parameters, mu_i, Ji, direction,
+                pool=None, skip_estimator=False):
     j = 0
     condition = True
     while condition and j < TR_parameters['max_iterations_armijo']:
         mu_ip1 = mu_i + (TR_parameters['initial_step_armijo'] ** j) * direction
         mu_ip1_dict = opt_model.primal_model.parameters.parse(mu_ip1)
-        mu_ip1_dict = projection_onto_range(parameter_space,mu_ip1_dict)
+        mu_ip1_dict = projection_onto_range(parameter_space, mu_ip1_dict)
         mu_ip1 = mu_ip1_dict.to_numpy()
         Jip1 = opt_model.output_functional_hat(mu_ip1_dict, pool=pool)
         # print(f"Jip1 error {np.abs(Jip1 - opt_model.fom.output_functional_hat(mu_ip1_dict))}", end='')
@@ -74,41 +76,48 @@ def armijo_rule(opt_model, parameter_space, TR_parameters, mu_i, Ji, direction, 
             u_cp = opt_model.solve(mu_ip1_dict)
             p_cp = opt_model.solve_dual(mu_ip1_dict)
             est = opt_model.estimate_output_functional_hat(u_cp, p_cp, mu_ip1_dict)
+            if isinstance(est, tuple):
+                est = est[0]
             # print(f"j:{j}  estimate: {est}")
         else:
             est = 0.0
 
-        if  Jip1 <= Ji - (TR_parameters['armijo_alpha'] / ((TR_parameters['initial_step_armijo'] ** j))) * (np.linalg.norm(mu_ip1-mu_i)**2) and abs(est / Jip1) <= TR_parameters['radius']:
+        if Jip1 <= Ji - (TR_parameters['armijo_alpha'] / ((TR_parameters['initial_step_armijo'] ** j))) * (np.linalg.norm(mu_ip1-mu_i)**2) and abs(est / Jip1) <= TR_parameters['radius']:
             condition = False
         j = j + 1
 
-    if condition:  # This means that we exit the loop because of maximum iteration reached
+    if condition:
+        # This means that we exit the loop because of maximum iteration reached
         print("Maximum iteration for Armijo rule reached")
         mu_ip1 = mu_i
         mu_ip1_dict = opt_model.primal_model.parameters.parse(mu_ip1)
         Jip1 = Ji
-        est = TR_parameters['radius']*Ji # so that the Qian-Grepl stop as well
+        est = TR_parameters['radius']*Ji  # so that the Qian-Grepl stop as well
 
-    return mu_ip1, mu_ip1_dict, Jip1, abs(est / Jip1) #the last is needed for the boundary criterium
+    # the last is needed for the boundary criterium
+    return mu_ip1, mu_ip1_dict, Jip1, abs(est / Jip1)
 
-def compute_new_hessian_approximation(new_mu,old_mu,new_gradient,old_gradient,old_B):
+
+def compute_new_hessian_approximation(new_mu, old_mu, new_gradient,
+                                      old_gradient, old_B):
 
     gk = new_gradient-old_gradient
     pk = new_mu-old_mu
 
     den = gk.dot(pk)
 
-    if den>0.0:
+    if den > 0.0:
         Hkgk = old_B.dot(gk)
         coeff = gk.dot(Hkgk)
 
-        Hkgkpkt = np.outer(Hkgk,pk)
+        Hkgkpkt = np.outer(Hkgk, pk)
 
-        pkHkgkt = np.outer(pk,Hkgk)
+        pkHkgkt = np.outer(pk, Hkgk)
 
-        pkpkt = np.outer(pk,pk)
+        pkpkt = np.outer(pk, pk)
 
-        new_B = old_B + (den+coeff)/(den*den) * pkpkt - (1.0/den) * Hkgkpkt - (1.0/den)*pkHkgkt
+        new_B = old_B + (den+coeff)/(den*den) * pkpkt - \
+            (1.0/den) * Hkgkpkt - (1.0/den)*pkHkgkt
     else:
         print("Curvature condition: {}".format(den))
         print("Reset direction to - gradient")
@@ -116,8 +125,8 @@ def compute_new_hessian_approximation(new_mu,old_mu,new_gradient,old_gradient,ol
 
     return new_B
 
-def compute_modified_hessian_action_matrix_version(H,Active,Inactive,eta):
 
+def compute_modified_hessian_action_matrix_version(H, Active, Inactive, eta):
     etaA = np.multiply(Active, eta)
     etaI = np.multiply(Inactive, eta)
 
@@ -127,9 +136,12 @@ def compute_modified_hessian_action_matrix_version(H,Active,Inactive,eta):
     return Action_of_modified_H
 
 
-def solve_optimization_subproblem_BFGS(opt_model, parameter_space, mu_k_dict, TR_parameters, timing=False, FOM=False,
+def solve_optimization_subproblem_BFGS(opt_model, parameter_space, mu_k_dict,
+                                       TR_parameters, timing=False, FOM=False,
                                        pool=None, skip_estimator=False):
-    #This is used by the TR algorithm and the FOM in the paper Keil et al. '20, with which we compare our new proposed method
+    # This is used by the TR algorithm and the FOM in the paper Keil et al.'20,
+    # with which we compare our new proposed method
+
     if not FOM:
         print('___ starting subproblem')
         if 'beta' not in TR_parameters:
@@ -138,7 +150,6 @@ def solve_optimization_subproblem_BFGS(opt_model, parameter_space, mu_k_dict, TR
     else:
         print('Starting projected BFGS method')
         print("Starting parameter {}".format(mu_k_dict))
-
 
     tic_ = time.time()
     times = []
@@ -282,19 +293,21 @@ def solve_optimization_subproblem_BFGS(opt_model, parameter_space, mu_k_dict, TR
         return mu_ip1_dict, Jcp, i, Jip1, FOCs, mus
 
 
-def modified_hessian_action(mu,Active,Inactive,opt_model,eta):
+def modified_hessian_action(mu, Active, Inactive, opt_model, eta):
 
-    etaA = np.multiply(Active,eta)
-    etaI = np.multiply(Inactive,eta)
+    etaA = np.multiply(Active, eta)
+    etaI = np.multiply(Inactive, eta)
 
     Action_on_I = opt_model.output_functional_hessian_operator(mu, etaI)
 
-    Action_of_modified_operator = etaA + np.multiply(Inactive,Action_on_I)
+    Action_of_modified_operator = etaA + np.multiply(Inactive, Action_on_I)
 
     return Action_of_modified_operator
 
 
-def solve_optimization_subproblem_NewtonMethod(opt_model, parameter_space, mu_k_dict, TR_parameters, timing=False,
+def solve_optimization_subproblem_NewtonMethod(opt_model, parameter_space,
+                                               mu_k_dict, TR_parameters,
+                                               timing=False,
                                                skip_estimator=False):
     print('___ starting subproblem')
     if 'beta' not in TR_parameters:
@@ -625,6 +638,8 @@ def TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None, extensi
         u_rom = opt_rom.solve(mu_kp1)
         p_rom = opt_rom.solve_dual(mu_kp1, U=u_rom)
         estimate_J = opt_rom.estimate_output_functional_hat(u_rom, p_rom, mu_kp1)
+        if isinstance(estimate_J, tuple):
+            estimate_J = estimate_J[0]
         if TR_parameters['Qian-Grepl']:
             estimate_gradient = opt_rom.estimate_output_functional_hat_gradient_norm(mu_kp1, u_rom, p_rom)
 
