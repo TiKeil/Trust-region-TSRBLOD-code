@@ -68,7 +68,6 @@ def discretize_quadratic_NCD_pdeopt_stationary_cg(problem, diameter=np.sqrt(2)/2
         else:
             assert desired_temperature is not None
             u_d = InterpolationOperator(grid, u_desired).as_vector()
-
     Restricted_L2_OP_fine = L2_OP(grid, data['boundary_info'], dirichlet_clear_rows=False,
                                   coefficient_function=domain_of_interest)
 
@@ -131,7 +130,7 @@ def discretize_quadratic_NCD_pdeopt_stationary_cg(problem, diameter=np.sqrt(2)/2
 
     l2_u_d_squared = Restricted_L2_OP.apply2(u_d,u_d)[0][0]
     constant_part = 0.5 * l2_u_d_squared
-
+    print('constant ', constant_part)
     # assemble output functional
     from pdeopt.theta import build_output_coefficient
     if weights is not None:

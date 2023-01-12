@@ -9,13 +9,12 @@
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
 # Copyright 2019-2022 all developers. All rights reserved.
-# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 # Authors:
 #   Tim Keil (2022)
 # ~~~
 
 import numpy as np
-import time
 import scipy
 from numbers import Number
 
@@ -25,6 +24,7 @@ from pymor.operators.constructions import VectorOperator, LincombOperator
 from pymor.operators.constructions import IdentityOperator
 from pymor.operators.block import BlockOperator
 from pymor.operators.interface import Operator
+
 
 class QuadraticPdeoptStationaryModel(StationaryModel):
 
@@ -37,17 +37,21 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
                  evaluation_counter=None,
                  coarse_projection=None,
                  fine_prolongation=None):
-        super().__init__(primal_model.operator, primal_model.rhs, primal_model.output_functional,
-                         primal_model.products, primal_model.error_estimator, primal_model.visualizer,  name)
+        super().__init__(primal_model.operator, primal_model.rhs,
+                         primal_model.output_functional,
+                         primal_model.products, primal_model.error_estimator,
+                         primal_model.visualizer, name)
         self.__auto_init(locals())
-        if self.optional_forward_model is not None and hasattr(self.optional_forward_model, 'store_in_tmp'):
+        if self.optional_forward_model is not None and \
+           hasattr(self.optional_forward_model, 'store_in_tmp'):
             self.store_in_tmp = self.optional_forward_model.store_in_tmp
         else:
             self.store_in_tmp = False
         if self.opt_product is None:
             self.opt_product = primal_model.h1_product
         if self.estimators is None:
-            self.estimators = {'primal': None, 'dual': None, 'output_functional_hat': None,
+            self.estimators = {'primal': None, 'dual': None,
+                               'output_functional_hat': None,
                                'output_functional_hat_d_mus': None}
         if coarse_projection is None:
             self.coarse_projection = IdentityOperator(self.solution_space)
@@ -84,7 +88,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
         if U is None:
             U = self.solve(mu, **kwargs)
             if isinstance(U, tuple):
-                U = U[0] #<-- for the verbose case
+                U = U[0]  # <-- for the verbose case
         if self.dual_model is not None:
             mu = self._add_primal_to_parameter(mu, U)
             if self.optional_forward_model:
@@ -239,6 +243,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
             residual_lhs = self.output_functional_dict['dual_primal_projected_op'].apply2(P, U, mu=mu)[0, 0]
             residual_rhs = self.output_functional_dict['dual_projected_rhs'].apply_adjoint(P, mu=mu).to_numpy()[0, 0]
             correction_term = residual_rhs - residual_lhs
+        # print(constant_part(mu), linear_part, bilinear_part, correction_term)
         return constant_part(mu) + linear_part + bilinear_part + correction_term
 
     def corrected_output_functional_hat(self, mu, u=None, p=None, **kwargs):
@@ -279,6 +284,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
         else:
             residual_dmu_lhs = self.primal_model.operator.d_mu(component, index).apply2(P, U, mu=mu)
             residual_dmu_rhs = self.primal_model.rhs.d_mu(component, index).apply_adjoint(P, mu=mu).to_numpy()[0,0]
+        # print(J_dmu, residual_dmu_lhs, residual_dmu_rhs)
         return (J_dmu - residual_dmu_lhs + residual_dmu_rhs)[0,0]
 
     def adjoint_corrected_output_functional_hat_d_mu(self, component, index, mu, U=None, P=None,
@@ -442,7 +448,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
                     gradient_operator_2.append(self.primal_model.operator.d_mu(key, l).apply2(P_d_eta, U, mu=mu)[0,0])
 
                 J_vector.append(output_coefficient.d_mu(key, l).d_mu(key, l).evaluate(mu)* eta[k])
-                k +=1
+                k += 1
         gradient_operator_1 = np.array(gradient_operator_1)
         gradient_operator_2 = np.array(gradient_operator_2)
         gradient_rhs = np.array(gradient_rhs)
@@ -562,7 +568,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
             return dual_rhs_operator
         else:
             dual_rhs_operator = LincombOperator(operators, coefficients)
-            return self.primal_model.with_(rhs = dual_rhs_operator)
+            return self.primal_model.with_(rhs=dual_rhs_operator)
 
     def _build_coarse_dual_model(self, U, mu=None):
         if self.optional_forward_model.use_fine_mesh:
@@ -603,6 +609,7 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
         eta[self.local_index_to_global_index[component][index]] = 1
         return eta
 
+
 def build_initial_basis(opt_fom, mus=None, build_sensitivities=False):
     primal_basis = opt_fom.solution_space.empty()
     dual_basis = opt_fom.solution_space.empty()
@@ -620,21 +627,21 @@ def build_initial_basis(opt_fom, mus=None, build_sensitivities=False):
             primal_sens_basis[key] = sens_pr
             dual_sens_basis[key] = sens_du
     for (i, mu) in enumerate(mus):
-        dont_debug = 1 # set 0 for debugging
+        dont_debug = 1  # set 0 for debugging
         u = opt_fom.solve(mu)
         primal_basis.append(u)
-        if i != 1 or dont_debug: #< -- for debuginng
+        if i != 1 or dont_debug:  # <-- for debuginng
             dual_basis.append(opt_fom.solve_dual(mu, U=u))
         dual_basis = gram_schmidt(dual_basis, product=opt_fom.opt_product)
         primal_basis = gram_schmidt(primal_basis, product=opt_fom.opt_product)
         if build_sensitivities:
             for (key, size) in opt_fom.parameters.items():
                 for l in range(size):
-                    if key == 'biot' or dont_debug: #< -- for debuginng
-                        if i != 2 and i!=3 or dont_debug: #< -- for debuginng
+                    if key == 'biot' or dont_debug:  # <-- for debuging
+                        if i != 2 and i != 3 or dont_debug:  # <-- for debuging
                             primal_sens_basis[key][l].append(opt_fom.solve_for_u_d_mu(key, l, mu))
-                    else: #< -- for debuginng
-                        if i!=3 or dont_debug: #< -- for debuginng
+                    else:  # <-- for debuging
+                        if i != 3 or dont_debug:  # <-- for debuginng
                             primal_sens_basis[key][l].append(opt_fom.solve_for_u_d_mu(key, l, mu))
                     dual_sens_basis[key][l].append(opt_fom.solve_for_p_d_mu(key, l, mu))
                     primal_sens_basis[key][l] = gram_schmidt(primal_sens_basis[key][l], product=opt_fom.opt_product)
