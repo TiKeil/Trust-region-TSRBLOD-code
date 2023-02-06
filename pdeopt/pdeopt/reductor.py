@@ -337,9 +337,9 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
                 self.__auto_init(locals())
             def estimate_error(self, U, mu, non_assembled=False):
                 if non_assembled and self.non_assembled_rom is not None:
-                    return self.non_assembled_rom.estimate_error(U, mu)
+                    return self.non_assembled_rom.estimate_error(mu)
                 else:
-                    return self.primal_rom.estimate_error(U, mu)
+                    return self.primal_rom.estimate_error(mu)
 
         estimators['primal'] = PrimalCoerciveRBEstimator(self.primal_rom, self.non_assembled_primal_rom)
 
@@ -353,9 +353,9 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
             def estimate_error(self, U, P, mu, non_assembled=False):
                 primal_estimate = self.primal_estimator.estimate_error(U, mu, non_assembled=non_assembled)[0]
                 if non_assembled and self.non_assembled_rom is not None:
-                    dual_intermediate_estimate = self.non_assembled_rom.estimate_error(P, mu)[0]
+                    dual_intermediate_estimate = self.non_assembled_rom.estimate_error(mu)[0]
                 else:
-                    dual_intermediate_estimate = self.dual_rom.estimate_error(P, mu)
+                    dual_intermediate_estimate = self.dual_rom.estimate_error(mu)
                 if print_pieces or 0:
                     print(self.cont_k(mu), self.coercivity_estimator(mu), primal_estimate, dual_intermediate_estimate)
                 return 2* self.cont_k(mu) /self.coercivity_estimator(mu) * primal_estimate + dual_intermediate_estimate

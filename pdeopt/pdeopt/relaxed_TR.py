@@ -22,6 +22,7 @@ from pdeopt.RBLOD_reductor import QuadraticPdeoptStationaryCoerciveLODReductor
 import time
 import numpy as np
 
+
 def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None, extension_params=None, opt_fom=None,
                          return_opt_rom=False, pool=None, mesh_adaptive=False, skip_estimator=True):
     if TR_parameters is None:
