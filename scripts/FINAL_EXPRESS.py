@@ -21,10 +21,12 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+from pymor.tools.random import new_rng
 from pymor.core.logger import set_log_levels
 from pymor.core.defaults import set_defaults
 from pymor.core.cache import disable_caching
 from pdeopt.tools import print_iterations_and_walltime
+
 set_log_levels({'pymor': 'ERROR',
                 'notebook': 'INFO'})
 
@@ -51,7 +53,7 @@ print_on_ranks = True
 '''
 
 coarse_elements = 20
-n = 1200
+n = 200
 diameter = np.sqrt(2)/n
 
 two_scale_estimator_for_RBLOD = False
@@ -64,8 +66,8 @@ use_fine_mesh = True
 # use_LOD = True
 use_LOD = False
 
-# skip_estimator = False
-skip_estimator = True
+skip_estimator = False
+# skip_estimator = True
 
 add_error_residual = True
 # add_error_residual = False
@@ -91,7 +93,8 @@ domain_of_interest = None
 
 problem = global_problem
 
-mu_d = global_problem.parameter_space.sample_randomly(1, seed=23)[0]
+new_rng(23).install()
+mu_d = global_problem.parameter_space.sample_randomly(1)[0]
 mu_d_array = mu_d.to_numpy()
 
 for i in [3,4,6,7,8,9,11,14]:
@@ -203,13 +206,14 @@ else:
 
 # starting with 
 parameter_space = global_problem.parameter_space
-mu = parameter_space.sample_randomly(1, seed=seed)[0]
+new_rng(seed).install()
+mu = parameter_space.sample_randomly(1)[0]
 
 # ### What methods do you want to test ?
 
 optimization_methods = [
     # FOM Method
-      'BFGS',
+    #  'BFGS',
     #  'BFGS_LOD',
     # TR-RB
         # NCD-corrected from KMSOV'20
