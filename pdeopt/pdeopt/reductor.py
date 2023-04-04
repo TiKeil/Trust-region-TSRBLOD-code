@@ -128,9 +128,9 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
         self.cont_a = MaxThetaParameterFunctional(self.primal_fom.operator.coefficients, mu_bar)
         self.time_for_enrichment = 0
 
-    def reduce(self):
+    def reduce(self, dims=None):
         assert self.RBPrimal is not None, 'I can not reduce without a RB basis'
-        return super().reduce()
+        return super().reduce(dims)
 
     def _reduce(self):
         # ensure that no logging output is generated for error_estimator assembly in case there is
@@ -339,7 +339,7 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
                 if non_assembled and self.non_assembled_rom is not None:
                     return self.non_assembled_rom.estimate_error(U, mu)
                 else:
-                    return self.primal_rom.estimate_error(U, mu)
+                    return self.primal_rom.estimate_error(mu)
 
         estimators['primal'] = PrimalCoerciveRBEstimator(self.primal_rom, self.non_assembled_primal_rom)
 
@@ -355,7 +355,7 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
                 if non_assembled and self.non_assembled_rom is not None:
                     dual_intermediate_estimate = self.non_assembled_rom.estimate_error(P, mu)[0]
                 else:
-                    dual_intermediate_estimate = self.dual_rom.estimate_error(P, mu)
+                    dual_intermediate_estimate = self.dual_rom.estimate_error(mu)
                 if print_pieces or 0:
                     print(self.cont_k(mu), self.coercivity_estimator(mu), primal_estimate, dual_intermediate_estimate)
                 return 2* self.cont_k(mu) /self.coercivity_estimator(mu) * primal_estimate + dual_intermediate_estimate
@@ -442,7 +442,13 @@ class QuadraticPdeoptStationaryCoerciveReductor(CoerciveRBReductor):
         raise NotImplementedError
 
     def _reduce_to_subbasis(self, dims):
-        raise NotImplementedError
+        new_reductor = QuadraticPdeoptStationaryCoerciveReductor(
+            self.fom, RBPrimal=self.RBPrimal[:dims['RB']], RBDual=self.RBDual[:dims['RB']],
+            opt_product=self.opt_product, coercivity_estimator=self.coercivity_estimator,
+            check_orthonormality=self.check_orthonormality, check_tol=self.check_tol, unique_basis=self.unique_basis,
+            reductor_type=self.reductor_type, mu_bar=self.mu_bar, prepare_for_hessian=self.prepare_for_hessian,
+            prepare_for_gradient_estimate=self.prepare_for_gradient_estimate, adjoint_estimate=self.adjoint_estimate)
+        return new_reductor.reduce()
 
     def _reduce_to_primal_subbasis(self, dim):
         raise NotImplementedError
