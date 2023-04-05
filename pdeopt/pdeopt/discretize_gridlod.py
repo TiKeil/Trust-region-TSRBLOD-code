@@ -159,7 +159,7 @@ def discretize_gridlod(problem, fine_diameter, coarse_elements, pool=None, count
     middle_coarse_index = np.prod(world.NWorldCoarse) // 2 + world.NWorldCoarse[0] // 2
     from gridlod.world import Patch
     k = int(np.ceil(np.abs(np.log(np.sqrt(2 * (1.0 / world.NWorldCoarse[0] ** 2))))))
-    print(f"Gridlod discretizer: Max DoFs per patch with k={k}:  {Patch(world, k, middle_coarse_index).NpFine}\n")
+    # print(f"Gridlod discretizer: Max DoFs per patch with k={k}:  {Patch(world, k, middle_coarse_index).NpFine}\n")
     # assert 0
     if use_fine_mesh:
         xt = util.tCoordinates(NFine)

@@ -68,13 +68,11 @@ def armijo_rule(opt_model, parameter_space, TR_parameters, mu_i, Ji, direction, 
         mu_ip1_dict = projection_onto_range(parameter_space,mu_ip1_dict)
         mu_ip1 = mu_ip1_dict.to_numpy()
         Jip1 = opt_model.output_functional_hat(mu_ip1_dict, pool=pool)
-        # print(f"Jip1 error {np.abs(Jip1 - opt_model.fom.output_functional_hat(mu_ip1_dict))}", end='')
 
         if not TR_parameters['full_order_model'] and not skip_estimator:
             u_cp = opt_model.solve(mu_ip1_dict)
             p_cp = opt_model.solve_dual(mu_ip1_dict)
             est = opt_model.estimate_output_functional_hat(u_cp, p_cp, mu_ip1_dict)
-            # print(f"j:{j}  estimate: {est}")
         else:
             est = 0.0
 
