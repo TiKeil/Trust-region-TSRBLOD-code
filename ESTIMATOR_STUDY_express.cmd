@@ -13,7 +13,7 @@
 
 
 # set an output file
-#SBATCH --output /scratch/tmp/t_keil02/tr_tsrblod/final/exp1_express.dat
+#SBATCH --output /scratch/tmp/t_keil02/tr_tsrblod/final/estimator_study.dat
 
 # run the application
 module load intel
@@ -26,7 +26,7 @@ export GOTO_NUM_THREADS=1
 export OMPI_MCA_mpi_warn_on_fork=0
 
 echo "Launching job:"
-srun /home/t/t_keil02/tr_tsrblod_github/venv/bin/python -u /home/t/t_keil02/tr_tsrblod_github/scripts/FINAL_EXPRESS.py
+srun /home/t/t_keil02/tr_tsrblod_github/venv/bin/python -u /home/t/t_keil02/tr_tsrblod_github/scripts/Estimator_study.py
 
 if [ $? -eq 0 ]
 then

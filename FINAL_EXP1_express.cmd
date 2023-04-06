@@ -1,11 +1,10 @@
 #!/bin/bash
  
-#SBATCH --nodes=20                  # the number of nodes you want to reserve
-#SBATCH --ntasks-per-node=20
+#SBATCH --nodes=1                  # the number of nodes you want to reserve
+#SBATCH --ntasks-per-node=36
 #SBATCH --mem=80G
-#SBATCH --exclusive
-#SBATCH --partition=normal          # on which partition to submit the job
-#SBATCH --time=12:00:00              # the max wallclock time (time limit your job will run)
+#SBATCH --partition=express          # on which partition to submit the job
+#SBATCH --time=2:00:00              # the max wallclock time (time limit your job will run)
  
 #SBATCH --job-name=test_exp_1       # the name of your job
 #SBATCH --mail-type=ALL             # receive an email when your job starts, finishes normally or is aborted
@@ -13,7 +12,7 @@
 
 
 # set an output file
-#SBATCH --output /scratch/tmp/t_keil02/tr_tsrblod/final/exp1.dat
+#SBATCH --output /scratch/tmp/t_keil02/tr_tsrblod/final/exp1_express.dat
 
 # run the application
 module load intel

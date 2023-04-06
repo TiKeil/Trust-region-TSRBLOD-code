@@ -39,22 +39,22 @@ use_pool = True
 if use_pool:
     from pymor.parallel.mpi import MPIPool
     pool = MPIPool()
-    store_in_tmp = 'tmp'  # <---- adjust this depending on your HPC system
+    store_in_tmp = '/scratch/tmp/t_keil02/tr_tsrblod/tmp3'  # <---- adjust this depending on your HPC system
 else:
     from pymor.parallel.dummy import DummyPool
     pool = DummyPool()
     store_in_tmp = False
 pool.apply(prepare_kernels)
-print_on_ranks = True
+print_on_ranks = False
 
 '''
     Variables for the experiment and discretization
 '''
 
-coarse_elements = 1200
-n = 20
+coarse_elements = 20
+n = 1200
 diameter = np.sqrt(2)/n
-max_extensions = 21
+max_extensions = 31
 
 save_correctors = False
 
@@ -109,7 +109,7 @@ sigma_u = 100
 weights = {'sigma_u': sigma_u, 'diffusion': 0.001,
            'low_diffusion': 0.001}
 
-optional_enrichment = True
+optional_enrichment = False
 
 coarse_J = True
 N_coarse = coarse_elements
@@ -178,7 +178,7 @@ parameter_space = global_problem.parameter_space
 # ### What methods do you want to test ?
 
 optimization_methods = [
-          'Method_RB',
+    #      'Method_RB',
           'Method_TSRBLOD',
  ]
 

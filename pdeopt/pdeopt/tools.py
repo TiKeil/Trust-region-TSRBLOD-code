@@ -166,8 +166,8 @@ def extract_further_timings(total_time, data, reductor, reference_time=None):
     if isinstance(reductor, QuadraticPdeoptStationaryCoerciveReductor):
         return dict(inner=subproblem_time, outer=total_time-subproblem_time, speedup=speedup)
     elif isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
-        stage_1 = reductor.total_stage_1_time
-        stage_2 = reductor.total_stage_2_time
+        stage_1 = data['stage_1']
+        stage_2 = data['stage_2']
         return dict(inner=subproblem_time, outer=total_time-subproblem_time,
                     speedup=speedup, stage_1=stage_1, stage_2=stage_2)
     else:
@@ -184,7 +184,8 @@ def print_further_timings(result_dict):
         stage_2 = result_dict['stage_2']
         print(f'Stage 1 construction:  {stage_1:.2f}s')
         print(f'Stage 2 construction:  {stage_2:.2f}s')
-    print(f'Speedup:               {speedup:.2f}')
+    if speedup:
+        print(f'Speedup:               {speedup:.2f}')
 
 def plot_functional(opt_fom, steps, ranges):
     first_component_steps = steps

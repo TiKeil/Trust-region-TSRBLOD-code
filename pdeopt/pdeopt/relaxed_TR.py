@@ -177,22 +177,19 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
                 if (eps_ks[k] == 0):
                     # to be implemented ! 
                     reductor = reductor.with_(reductor_type='coercive')
-                if not skip_estimator:
-                    print('checking global termination before expensive local enrichment')
-                    u = reductor.fom.optional_forward_model.solve(mu_kp1, pool=pool)
-                    p = reductor.fom.solve_dual(mu_kp1, U=u, pool=pool)
-                    gradient = reductor.fom.output_functional_hat_gradient(mu_kp1, U=u, P=p)
-                    mu_box = opt_rom.primal_model.parameters.parse(mu_kp1.to_numpy() - gradient)
-                    first_order_criticity = mu_kp1.to_numpy() - projection_onto_range(parameter_space, mu_box).to_numpy()
-                    normgrad = np.linalg.norm(first_order_criticity)
-                else:
-                    normgrad = np.inf
+                print('checking global termination before expensive local enrichment')
+                u = reductor.fom.optional_forward_model.solve(mu_kp1, pool=pool)
+                p = reductor.fom.solve_dual(mu_kp1, U=u, pool=pool)
+                gradient = reductor.fom.output_functional_hat_gradient(mu_kp1, U=u, P=p)
+                mu_box = opt_rom.primal_model.parameters.parse(mu_kp1.to_numpy() - gradient)
+                first_order_criticity = mu_kp1.to_numpy() - projection_onto_range(parameter_space, mu_box).to_numpy()
+                normgrad = np.linalg.norm(first_order_criticity)
                 if normgrad <= TR_parameters['FOC_tolerance']:
                     pass
                 else:
                     opt_rom, reductor, KmsijT, corT = enrichment_step(mu_kp1, reductor, pool=pool)
-                    u = reductor.fom.solve(mu_kp1, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
-                    p = reductor.fom.solve_dual(mu_kp1, U=u, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
+                    # u = reductor.fom.solve(mu_kp1, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
+                    # p = reductor.fom.solve_dual(mu_kp1, U=u, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
             else:
                 if  (eps_ks[k] == 0):
                     reductor = reductor.with_(reductor_type='simple_coercive')
@@ -234,7 +231,6 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
                     u, p = out_1, out_2
             model_has_been_enriched = True
             JFE_list.append(reductor.fom.output_functional_hat(mu_kp1, u, p))
-
 
             J_kp1 = new_rom.output_functional_hat(mu_kp1)
             print("k: {} - j {} - Cost Functional: {} - mu: {}".format(k, j, J_kp1, mu_kp1))
@@ -309,6 +305,9 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
     print(f'Sub-problems took {total_subproblem_time:.5f}s')
     if extension_params['timings']:
         data['total_subproblem_time'] = total_subproblem_time
+        if isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
+            data['stage_1'] = reductor.total_stage_1_time
+            data['stage_2'] = reductor.total_stage_2_time
         if TR_parameters['control_mu']:
             data['times_est_evaluations'] = times_est_evaluations
             data['mu_est'] = mu_est
