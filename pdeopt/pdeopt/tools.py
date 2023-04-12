@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 import numpy as np
@@ -154,8 +153,38 @@ def print_RBLOD_result(dict):
     print(f"        TSRBLOD ROM solves:                     {dict['two_scale_ROM']}")
 
 def print_iterations_and_walltime(it, walltime):
-    print(f"\nouter iterations: {it}")
-    print(f"total walltime:   {walltime:.2f} seconds")
+    print(f"outer iterations:      {it-1}")
+    print(f"total walltime:        {walltime:.2f}s")
+
+from pdeopt.reductor import QuadraticPdeoptStationaryCoerciveReductor
+from pdeopt.RBLOD_reductor import QuadraticPdeoptStationaryCoerciveLODReductor
+
+def extract_further_timings(total_time, data, reductor, reference_time=None):
+    subproblem_time = data['total_subproblem_time']
+    speedup = reference_time / total_time if reference_time else None
+    if isinstance(reductor, QuadraticPdeoptStationaryCoerciveReductor):
+        return dict(inner=subproblem_time, outer=total_time-subproblem_time, speedup=speedup)
+    elif isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
+        stage_1 = data['stage_1']
+        stage_2 = data['stage_2']
+        return dict(inner=subproblem_time, outer=total_time-subproblem_time,
+                    speedup=speedup, stage_1=stage_1, stage_2=stage_2)
+    else:
+        assert 0
+
+def print_further_timings(result_dict):
+    outer = result_dict['outer']
+    inner = result_dict['inner']
+    speedup = result_dict['speedup']
+    print(f'Outer iterations:      {outer:.2f}s')
+    print(f'Inner iterations:      {inner:.2f}s')
+    if 'stage_1' in result_dict:
+        stage_1 = result_dict['stage_1']
+        stage_2 = result_dict['stage_2']
+        print(f'Stage 1 construction:  {stage_1:.2f}s')
+        print(f'Stage 2 construction:  {stage_2:.2f}s')
+    if speedup:
+        print(f'Speedup:               {speedup:.2f}')
 
 def plot_functional(opt_fom, steps, ranges):
     first_component_steps = steps

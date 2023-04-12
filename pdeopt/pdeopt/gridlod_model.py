@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 import dill
@@ -85,7 +84,7 @@ class GridlodModel(BasicObject):
             assert aFine_local_constructor is not None
         if pool is None:
             if construct_patches:
-                print('WARNING: You are not using a parallel pool')
+                print('WARNING: You are not using a parallel pool in GridlodModel')
 
         pool = pool or DummyPool()
 
@@ -169,8 +168,8 @@ class GridlodModel(BasicObject):
         if self.evaluation_counter:
             self.evaluation_counter.count(is_rom=self.is_rom, coarse=False)
         save_correctors = compute_correctors or self.save_correctors
-        if pool is None:
-            print('WARNING: You are not using a parallel pool')
+        if pool is None and not self.romT:
+            print(f'WARNING: You are not using a parallel pool in corrector solve')
         pool = pool or DummyPool()
         if not self.romT:
             if self.operator is not None:

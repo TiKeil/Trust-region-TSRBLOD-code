@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 import numpy as np
@@ -67,18 +66,17 @@ def armijo_rule(opt_model, parameter_space, TR_parameters, mu_i, Ji, direction, 
         mu_ip1_dict = opt_model.primal_model.parameters.parse(mu_ip1)
         mu_ip1_dict = projection_onto_range(parameter_space,mu_ip1_dict)
         mu_ip1 = mu_ip1_dict.to_numpy()
-        Jip1 = opt_model.output_functional_hat(mu_ip1_dict, pool=pool)
-        # print(f"Jip1 error {np.abs(Jip1 - opt_model.fom.output_functional_hat(mu_ip1_dict))}", end='')
+        u_ip1 = opt_model.solve(mu_ip1_dict, pool=pool)
+        Jip1 = opt_model.output_functional_hat(mu_ip1_dict, U=u_ip1, pool=pool)
 
         if not TR_parameters['full_order_model'] and not skip_estimator:
-            u_cp = opt_model.solve(mu_ip1_dict)
-            p_cp = opt_model.solve_dual(mu_ip1_dict)
-            est = opt_model.estimate_output_functional_hat(u_cp, p_cp, mu_ip1_dict)
-            # print(f"j:{j}  estimate: {est}")
+            p_ip1 = opt_model.solve_dual(mu_ip1_dict)
+            est = opt_model.estimate_output_functional_hat(u_ip1, p_ip1, mu_ip1_dict)
         else:
             est = 0.0
 
-        if  Jip1 <= Ji - (TR_parameters['armijo_alpha'] / ((TR_parameters['initial_step_armijo'] ** j))) * (np.linalg.norm(mu_ip1-mu_i)**2) and abs(est / Jip1) <= TR_parameters['radius']:
+        if  Jip1 <= Ji - (TR_parameters['armijo_alpha'] / ((TR_parameters['initial_step_armijo'] ** j))) \
+                * (np.linalg.norm(mu_ip1-mu_i)**2) and abs(est / Jip1) <= TR_parameters['radius']:
             condition = False
         j = j + 1
 
@@ -232,7 +230,6 @@ def solve_optimization_subproblem_BFGS(opt_model, parameter_space, mu_k_dict, TR
                 Jcp = Jip1
             else:
                 Jcp = None
-
 
         mu_diff = np.linalg.norm(mu_i - mu_ip1) / np.linalg.norm(mu_i)
         J_diff = abs(Ji - Jip1) / abs(Ji)
@@ -777,6 +774,9 @@ def TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None, extensi
     print(f'Sub-problems took {total_subproblem_time:.5f}s')
     if extension_params['timings']:
         data['total_subproblem_time'] = total_subproblem_time
+        if isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
+            data['stage_1'] = reductor.total_stage_1_time
+            data['stage_2'] = reductor.total_stage_2_time
         if TR_parameters['control_mu']:
             data['times_est_evaluations'] = times_est_evaluations
             data['mu_est'] = mu_est

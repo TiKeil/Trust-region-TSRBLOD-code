@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 import numpy as np
@@ -159,7 +158,7 @@ def discretize_gridlod(problem, fine_diameter, coarse_elements, pool=None, count
     middle_coarse_index = np.prod(world.NWorldCoarse) // 2 + world.NWorldCoarse[0] // 2
     from gridlod.world import Patch
     k = int(np.ceil(np.abs(np.log(np.sqrt(2 * (1.0 / world.NWorldCoarse[0] ** 2))))))
-    print(f"max fine dofs per patch:    {Patch(world, k, middle_coarse_index).len_fine} with k={k}\n")
+    # print(f"Gridlod discretizer: Max DoFs per patch with k={k}:  {Patch(world, k, middle_coarse_index).NpFine}\n")
     # assert 0
     if use_fine_mesh:
         xt = util.tCoordinates(NFine)

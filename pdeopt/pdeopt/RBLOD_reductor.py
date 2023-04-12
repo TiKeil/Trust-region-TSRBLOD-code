@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 import numpy as np
@@ -21,7 +20,7 @@ import time
 
 from pymor.core.base import ImmutableObject
 from pymor.algorithms.projection import project
-from pymor.operators.constructions import LincombOperator, VectorOperator, IdentityOperator
+from pymor.operators.constructions import LincombOperator, VectorOperator, IdentityOperator, ZeroOperator
 from pymor.operators.numpy import NumpyMatrixOperator
 from pymor.reductors.basic import ProjectionBasedReductor
 from pymor.reductors.coercive import CoerciveRBReductor, SimpleCoerciveRBReductor
@@ -65,9 +64,11 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
                          check_tol=check_tol, coercivity_estimator=coercivity_estimator)
 
         # this is for the two scale model. Also needed for RBLOD estimator !!
+        if pool is None:
+            print(f'WARNING: You are not using a parallel pool in init of LOD reductor')
         self.pool = pool or DummyPool()
         self.precompute_constants()
-        self.mus_for_enrichment = [] #parameter_space.sample_randomly(5)
+        self.mus_for_enrichment = []
         self.initialize_roms()
 
         del self.pool
@@ -148,11 +149,36 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
                                store_in_tmp=self.store_in_tmp,
                                reductor_type=self.reductor_type,
                                print_on_ranks=self.print_on_ranks)) # aFine_Constructor=None)
+        if self.store_in_tmp:
+            self.romT = []
+            dir = self.store_in_tmp if isinstance(self.store_in_tmp, str) else 'tmp'
+            for T in range(len(self.patchT)):
+                dbfile = open(f'{dir}/rom_{T}', "rb")
+                rom = dill.load(dbfile)
+                self.romT.append(rom)
         print('') if self.print_on_ranks else 0
 
-    def reduce(self):
+    def reduce(self, dim=None, pool=None):
         # NOTE: never use super().reduce() for this since the dims are not correctly computed here !
-        return self._reduce()
+        if dim is not None:
+            new_reductor = QuadraticPdeoptStationaryCoerciveLODReductor(self.fom, self.f,
+                                                                        opt_product=self.opt_product,
+                                                                        coercivity_estimator=self.coercivity_estimator,
+                                                                        reductor_type=self.reductor_type,
+                                                                        mu_bar=self.mu_bar,
+                                                                        parameter_space=self.parameter_space,
+                                                                        two_scale=self.two_scale, pool=pool,
+                                                                        store_in_tmp=self.store_in_tmp,
+                                                                        optional_enrichment=self.optional_enrichment,
+                                                                        use_fine_mesh=self.use_fine_mesh,
+                                                                        print_on_ranks=self.print_on_ranks,
+                                                                        add_error_residual=self.add_error_residual)
+            for i in range(dim):
+                mu = self.mus_for_enrichment[i]
+                new_reductor.extend_bases(mu, pool=pool)
+            return new_reductor.reduce()
+        else:
+            return self._reduce()
 
     def _reduce(self):
         tic = time.perf_counter()
@@ -170,11 +196,11 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             rom.disable_logging()
         print(f' ... construction took {time.perf_counter() - tic:.4f}s')
         self.total_stage_2_time += time.perf_counter() - tic
-        print(f' ... total stage 2 time is currently {self.total_stage_2_time:.5f}')
+        print(f' ... total Stage 2 time is currently {self.total_stage_2_time:.4f}s')
         return rom
 
     def build_rom(self, estimator):
-        print('constructing ROM ...', end='', flush=True)
+        print('Constructing ROM ...', end='', flush=True)
         evaluation_counter = self.gridlod_model.evaluation_counter
         parsed_reductors = self.reductorT if self.gridlod_model.save_correctors else None
         if self.two_scale:
@@ -185,11 +211,9 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             #set_defaults({"pymor.algorithms.gram_schmidt.gram_schmidt.rtol": 1e-8})
 
             mus_for_primal_basis = []
+            print(f'Extending primal model with {len(self.mus_for_enrichment)} basis functions ...')
             for mu in self.mus_for_enrichment:
-            # if 1:
-            #     mu = self.mus_for_enrichment[-1]
                 mus_for_primal_basis.append(mu)
-                print('extending primal model')
                 evaluation_counter.count(is_rom=True)
                 evaluation_counter.count(is_rom=True, coarse=True)
                 try:
@@ -199,9 +223,8 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             tic = time.perf_counter()
             reduced_optional_forward_model = self.two_scale_reductor.reduce()
             print(f'residual reduction took {time.perf_counter()-tic:.5f}s')
-            U_mu = reduced_optional_forward_model.solve(mu)
-            if self.two_scale_residual is not None:
-                print("last estimate is: ", reduced_optional_forward_model.estimate_error(U_mu, mu))
+            # if self.two_scale_residual is not None and len(self.mus_for_enrichment) > 0:
+            #     print("last estimate is: ", reduced_optional_forward_model.estimate_error(mu))
 
             self.rom_two_scale = reduced_optional_forward_model
 
@@ -228,12 +251,14 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
                     if not op.name == 'VectorOperator_linear_part':
                         rhs_coefficients.append(basis_projection * c)
                         rhs_operators.append(op)
-            for c, op in zip(coarse_dual_model_rhs.coefficients, coarse_dual_model_rhs.operators):
-                if op.name == 'VectorOperator_linear_part':
-                    rhs_coefficients.append(c)
-                    rhs_operators.append(op)
-
-            rhs = LincombOperator(rhs_operators, rhs_coefficients)
+            if len_RB_basis > 0:
+                for c, op in zip(coarse_dual_model_rhs.coefficients, coarse_dual_model_rhs.operators):
+                    if op.name == 'VectorOperator_linear_part':
+                        rhs_coefficients.append(c)
+                        rhs_operators.append(op)
+                rhs = LincombOperator(rhs_operators, rhs_coefficients)
+            else:
+                rhs = VectorOperator(self.fom.solution_space.zeros())
 
             # use the matrices from before !!
             As, BTss, CTss, DTss, source_spaces = self.m_two_scale.extract_ABCD_and_sp()
@@ -241,11 +266,9 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             dual_two_scale_residual, dual_m_two_scale, self.dual_two_scale_reductor = self.build_two_scale_model(
                 rhs, As, BTss, CTss, DTss, source_spaces, res_op, res_prod)
             mus_for_dual_basis = []
+            print(f'Extending dual model with {len(self.mus_for_enrichment)} basis functions ...')
             for mu in self.mus_for_enrichment:
-            # if 1:
-            #     mu = mu
                 mus_for_dual_basis.append(mu)
-                print('extending dual model')
                 evaluation_counter.count(is_rom=True)
                 evaluation_counter.count(is_rom=True, coarse=True)
                 U = self.rom_two_scale.solve(mu)
@@ -258,10 +281,9 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             
             tic = time.perf_counter()
             self.dual_reduced_optional_forward_model = self.dual_two_scale_reductor.reduce()
-            print(f'residual reduction took {time.perf_counter()-tic:.5f}s')
-            P_mu = self.dual_reduced_optional_forward_model.solve(mu_with_U)
-            if dual_two_scale_residual is not None:
-                print("last dual estimate is: ", self.dual_reduced_optional_forward_model.estimate_error(P_mu, mu_with_U))
+            print(f'residual reduction took {time.perf_counter()-tic:.4f}s')
+            # if dual_two_scale_residual is not None and len_RB_basis > 0:
+            #     print("last dual estimate is: ", self.dual_reduced_optional_forward_model.estimate_error(mu_with_U))
             #set_defaults({"pymor.algorithms.gram_schmidt.gram_schmidt.rtol": 1e-4})
 
             ##############################
@@ -301,7 +323,6 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             projected_product = self.project_product(primal_lod_basis)
             print(f' ... enrichment completed... length of two scale bases are '
                   f'{len(primal_lod_basis), len(dual_lod_basis)}')
-            # print(f' length of corrector bases are {self.rom_sizeT}')
             return self.fom.with_(estimators=two_scale_estimator, optional_forward_model=self.rom_two_scale,
                                   dual_model=self.dual_reduced_optional_forward_model, fom=self.fom,
                                   evaluation_counter=evaluation_counter,
@@ -333,13 +354,16 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
             return self.fom.with_(estimators=estimator, optional_forward_model=reduced_optional_forward_model,
                                   fom=self.fom)
 
+    def enrich_all_locally(self, mu, pool=None):
+        return self.extend_bases(mu, pool=pool)
+
     def extend_bases(self, mu, U = None, P = None, corT = None, pool=None):
-        print('extending bases...', end='', flush=True)
+        print('Extending bases...', end='', flush=True)
         tic = time.perf_counter()
         if self.two_scale:
             self.mus_for_enrichment.append(mu)
         if pool is None:
-            print('WARNING: You are not using a parallel pool')
+            print(f'WARNING: You are not using a parallel pool in basis extension')
         pool = pool or DummyPool()
         self.gridlod_model.evaluation_counter.count(is_rom=False)
         self.gridlod_model.evaluation_counter.count(is_rom=False, coarse=True)
@@ -366,18 +390,19 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
                 self.romT.append(rom)
         else:
             if self.optional_enrichment:
-                KmsijT, self.romT, self.reductorT, self.rom_sizeT = zip(*pool.map(
+                KmsijT, self.romT, self.reductorT, self.rom_sizeT, _ = zip(*pool.map(
                     extend_patch_adaptively, list(self.romT), list(self.reductorT), list(corT), mu=mu,
-                    print_on_ranks=self.print_on_ranks, add_error_residual=self.add_error_residual
+                    print_on_ranks=self.print_on_ranks, add_error_residual=self.add_error_residual,
+                    gridlod_model=self.gridlod_model
                 ))
             else:
                 KmsijT, self.romT, self.reductorT, self.rom_sizeT = zip(*pool.map(
                     extend_patch, list(self.reductorT), list(corT), mu=mu, print_on_ranks=self.print_on_ranks,
-                    add_error_residual=self.add_error_residual
+                    add_error_residual=self.add_error_residual, gridlod_model=self.gridlod_model
                 ))
         print(f' ... Stage 1 enrichment took {time.perf_counter() - tic:.4f}s')
         self.total_stage_1_time += time.perf_counter() - tic
-        print(f' ... total stage 1 time is currently {self.total_stage_1_time:.5f}')
+        print(f' ... total Stage 1 time is currently {self.total_stage_1_time:.4f}s')
         return KmsijT, corT
 
     def build_two_scale_model(self, f, As=None, BTss=None, CTss=None, DTss=None, source_spaces=None,
@@ -395,7 +420,7 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
         full_source_spaces = [blocks[0].source]
         full_source_spaces.extend(m_two_scale.source_spaces)
         two_scale_product = TrueDiagonalBlockOperator(blocks, only_first=True, source_spaces=full_source_spaces)
-        print('building_two_scale_reductor')
+        print('building_two_scale_reductor ...')
         reductor_two_scale = CoerciveRBReductorForTwoScale(world, self.romT, m_two_scale,
                                                            coercivity_estimator=self.constants,
                                                            product=two_scale_product,
@@ -462,7 +487,7 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
                 self.__auto_init(locals())
             def estimate_error(self, U, mu):
                 U = self.rom_two_scale.solve(mu)
-                return self.rom_two_scale.estimate(U, mu)
+                return self.rom_two_scale.estimate_error(mu)
 
         if self.two_scale:
             estimators['primal'] = PrimalCoerciveRBEstimatorTSRBLOD(self.rom_two_scale)
@@ -483,7 +508,7 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
 
             def estimate_error(self, U, P, mu):
                 primal_estimate = self.primal_estimator.estimate_error(U, mu)
-                dual_estimate = self.dual_rom_two_scale.estimate_error(P, mu)
+                dual_estimate = self.dual_rom_two_scale.estimate_error(mu)
                 return np.sqrt(5)/self.gamma_k * (2* self.cont_k(mu) * primal_estimate + dual_estimate)
 
         class DualCoerciveRBEstimatorTS(ImmutableObject):
@@ -539,18 +564,18 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
 
         # truncation homogenization term
         class TruncationHomogenizationTerm(ImmutableObject):
-            def __init__(self, primal, dual, testing=0):
+            def __init__(self, primal, dual, dual_reconstruction, alpha=1):
                 self.__auto_init(locals())
 
             def estimate(self, U, P, mu):
-                if not self.testing:
-                    est_1 = self.primal.estimate_error(U, mu)
-                    est_2 = self.dual.estimate_error(U, P, mu)
-                    norm_P = P.block(0).norm()
-                    a_priori_part = 0
-                    return est_1 *(a_priori_part +  est_2  * norm_P) + est_1 * norm_P
-                else:
-                    return 0
+                est_1 = self.primal.estimate_error(U, mu)
+                est_2 = self.dual.estimate_error(U, P, mu)
+                P_rec = self.dual_reconstruction(P)
+                norm_P = P_rec.blocks[0].norm()
+                a_priori_part = 1.
+                # return est_1 * (a_priori_part * norm_P + est_2) + 1/np.sqrt(self.alpha) * est_1 * norm_P
+                # assumption: a_priori_part * norm_P < est_2
+                return est_1 * 2 * est_2 + 1/np.sqrt(self.alpha) * est_1 * norm_P
 
         # output hat
         class output_hat_RBEstimator_TSRBLOD(ImmutableObject):
@@ -571,7 +596,8 @@ class QuadraticPdeoptStationaryCoerciveLODReductor(CoerciveRBReductor):
 
                 return est
 
-        hom_term = TruncationHomogenizationTerm(estimators['primal'], estimators['dual'], 1)
+        hom_term = TruncationHomogenizationTerm(estimators['primal'], estimators['dual'],
+                                                self.dual_two_scale_reductor.reconstruct, self.min_alpha)
         if self.two_scale:
             estimators['output_functional_hat'] = output_hat_RBEstimator_TSRBLOD(
                 self.cont_k, estimators['primal'], estimators['dual'], self.rom_two_scale, hom_term)

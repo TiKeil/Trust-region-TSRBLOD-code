@@ -1,17 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
 from pdeopt.TR import solve_optimization_subproblem_NewtonMethod
@@ -75,24 +74,21 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
 
     print('starting parameter {}'.format(mu_k))
 
-    if 'eps_TR' not in TR_parameters:
-        generic_sequence_to_zero = [10**k for k in range(20, -10, -1)]
+    if 'eps_ks' not in TR_parameters:
+        generic_sequence_to_zero = [10**k for k in range(10, 0, -1)]
         for i in range(TR_parameters['max_iterations']-len(generic_sequence_to_zero)):
             generic_sequence_to_zero.append(0)
-        TR_parameters['eps_TR'] = generic_sequence_to_zero
-    if 'eps_cond' not in TR_parameters:
-        TR_parameters['eps_cond'] = generic_sequence_to_zero
+        TR_parameters['eps_ks'] = generic_sequence_to_zero
 
-    if (TR_parameters['eps_TR'][0] > 100) and (TR_parameters['eps_cond'][0] > 100) and skip_estimator:
+    if (TR_parameters['eps_ks'][0] > 0) and skip_estimator:
         assert reductor.reductor_type == 'non_assembled'
 
     ###### RELAXING RADIUS
 
-    eps_TR_ks = TR_parameters['eps_TR']
-    eps_cond_ks = TR_parameters['eps_cond']
+    eps_ks = TR_parameters['eps_ks']
 
     original_radius = TR_parameters['radius']
-    TR_parameters['radius'] = eps_TR_ks[0] + original_radius
+    TR_parameters['radius'] = eps_ks[0] + original_radius
 
     # timings
     tic = time.time()
@@ -146,8 +142,8 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
                 assert 0, 'not available in relaxed algorithm'
         if additional_criteria:
             break
-        print(f'Relaxing parameter for TR: {eps_TR_ks[k]:.0e} and SC: {eps_cond_ks[k]:.0e}')
-        if (TR_parameters['eps_TR'][0] > 100) and (TR_parameters['eps_cond'][0] > 100) and skip_estimator:
+        print(f'Relaxing parameter: {eps_ks[k]:.0e}')
+        if (eps_ks[0] > 0) and skip_estimator:
             print('skipping estimations entirely')
             no_estimation = True
         else:
@@ -165,40 +161,36 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
 
         print(f'sub-problem took {time.perf_counter()-tic_}')
         total_subproblem_time += time.perf_counter()-tic_
-        # verifying whether TR is fulfilled
-        u_rom = opt_rom.solve(mu_kp1)
-        p_rom = opt_rom.solve_dual(mu_kp1, U=u_rom)
         if not no_estimation:
+            u_rom = opt_rom.solve(mu_kp1)
+            p_rom = opt_rom.solve_dual(mu_kp1, U=u_rom)
             estimate_J = opt_rom.estimate_output_functional_hat(u_rom, p_rom, mu_kp1)
             TR_criterion = abs(estimate_J / J_kp1)
         else:
             estimate_J = 0
             TR_criterion = np.inf
 
-        if J_kp1 + estimate_J < Jcp + eps_cond_ks[k]:
+        if J_kp1 + estimate_J < Jcp + eps_ks[k]:
             print('starting enrichment')
             if isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
-                if (eps_cond_ks[k] < 100) or (eps_TR_ks[k] < 100):
+                if (eps_ks[k] == 0):
                     # to be implemented ! 
                     reductor = reductor.with_(reductor_type='coercive')
-                if not skip_estimator:
-                    print('checking global termination before expensive local enrichment')
-                    u = reductor.fom.optional_forward_model.solve(mu_kp1, pool=pool)
-                    p = reductor.fom.solve_dual(mu_kp1, U=u, pool=pool)
-                    gradient = reductor.fom.output_functional_hat_gradient(mu_kp1, U=u, P=p)
-                    mu_box = opt_rom.primal_model.parameters.parse(mu_kp1.to_numpy() - gradient)
-                    first_order_criticity = mu_kp1.to_numpy() - projection_onto_range(parameter_space, mu_box).to_numpy()
-                    normgrad = np.linalg.norm(first_order_criticity)
-                else:
-                    normgrad = np.inf
+                print('checking global termination before expensive local enrichment')
+                u = reductor.fom.optional_forward_model.solve(mu_kp1, pool=pool)
+                p = reductor.fom.solve_dual(mu_kp1, U=u, pool=pool)
+                gradient = reductor.fom.output_functional_hat_gradient(mu_kp1, U=u, P=p)
+                mu_box = opt_rom.primal_model.parameters.parse(mu_kp1.to_numpy() - gradient)
+                first_order_criticity = mu_kp1.to_numpy() - projection_onto_range(parameter_space, mu_box).to_numpy()
+                normgrad = np.linalg.norm(first_order_criticity)
                 if normgrad <= TR_parameters['FOC_tolerance']:
                     pass
                 else:
                     opt_rom, reductor, KmsijT, corT = enrichment_step(mu_kp1, reductor, pool=pool)
-                    u = reductor.fom.solve(mu_kp1, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
-                    p = reductor.fom.solve_dual(mu_kp1, U=u, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
+                    # u = reductor.fom.solve(mu_kp1, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
+                    # p = reductor.fom.solve_dual(mu_kp1, U=u, KmsijT=KmsijT, correctorsListT=corT, pool=pool)
             else:
-                if (eps_cond_ks[k] < 100) or (eps_TR_ks[k] < 100):
+                if  (eps_ks[k] == 0):
                     reductor = reductor.with_(reductor_type='simple_coercive')
                 opt_rom, reductor, out_1, out_2 = enrichment_step(mu_kp1, reductor, pool=pool)
                 u, p = out_1, out_2
@@ -213,7 +205,7 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
             all_mus.append(mus)
             mu_k = mu_kp1
 
-        elif J_kp1 - estimate_J > Jcp + eps_cond_ks[k]:
+        elif J_kp1 - estimate_J > Jcp + eps_ks[k]:
             print('necessary condition failed')
             TR_parameters['radius'] = TR_parameters['radius'] * 0.5
             print(f"Shrinking the TR radius to: {TR_parameters['radius']} because Jcp {Jcp} and J_kp1 {J_kp1}")
@@ -239,10 +231,9 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
             model_has_been_enriched = True
             JFE_list.append(reductor.fom.output_functional_hat(mu_kp1, u, p))
 
-
             J_kp1 = new_rom.output_functional_hat(mu_kp1)
             print("k: {} - j {} - Cost Functional: {} - mu: {}".format(k, j, J_kp1, mu_kp1))
-            if J_kp1 > Jcp + 1e-8 + eps_cond_ks[k]:    # add a safety tolerance of 1e-8 for avoiding numerical stability effects
+            if J_kp1 > Jcp + 1e-8 + eps_ks[k]:    # add a safety tolerance of 1e-8 for avoiding numerical stability effects
                 TR_parameters['radius'] = TR_parameters['radius'] * 0.5
                 print(
                     "Shrinking the TR radius to: {} because Jcp {} and J_kp1 {}".format(TR_parameters['radius'],
@@ -294,7 +285,7 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
 
             k = k + 1
             # update radius
-            TR_parameters['radius'] = eps_TR_ks[k] + original_radius
+            TR_parameters['radius'] = eps_ks[k] + original_radius
         print("******************************* \n")
 
 
@@ -313,6 +304,9 @@ def Relaxed_TR_algorithm(opt_rom, reductor, parameter_space, TR_parameters=None,
     print(f'Sub-problems took {total_subproblem_time:.5f}s')
     if extension_params['timings']:
         data['total_subproblem_time'] = total_subproblem_time
+        if isinstance(reductor, QuadraticPdeoptStationaryCoerciveLODReductor):
+            data['stage_1'] = reductor.total_stage_1_time
+            data['stage_2'] = reductor.total_stage_2_time
         if TR_parameters['control_mu']:
             data['times_est_evaluations'] = times_est_evaluations
             data['mu_est'] = mu_est

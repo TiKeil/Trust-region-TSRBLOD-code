@@ -1,0 +1,44 @@
+% This file was created by tikzplotlib v0.9.6.
+\begin{tikzpicture}
+
+\definecolor{color0}{rgb}{0.12156862745098,0.466666666666667,0.705882352941177}
+\definecolor{color1}{rgb}{1,0.498039215686275,0.0549019607843137}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, at={(1,0.5)}, anchor=west, draw=white!80!black},
+log basis y={10},
+tick align=outside,
+tick pos=left,
+x grid style={white!69.0196078431373!black},
+xlabel={time in seconds [s]},
+xmajorgrids,
+xmin=-1.11640026101959, xmax=92.9680434211215,
+xtick style={color=black},
+y grid style={white!69.0196078431373!black},
+ylabel={Mu error},
+ymajorgrids,
+ymin=3.48879881241706, ymax=8.31539771404906,
+ymode=log,
+ytick style={color=black}
+]
+\addplot [semithick, color0, mark=*, mark size=3, mark options={solid}]
+table {%
+7.69298937299754 7.9935049547214
+20.2418751952937 7.72565810627123
+38.6097376582911 7.20222927938208
+61.591645264416 4.77379465230295
+87.4091375110438 4.30362396109452
+88.691477799206 3.75643426869611
+};
+\addlegendentry{TR-TSRBLOD BFGS}
+\addplot [semithick, color1, mark=*, mark size=3, mark options={solid}]
+table {%
+3.16016536089592 7.9935049547214
+7.15419464441948 5.45319044048629
+7.52481608721428 3.62929025926412
+};
+\addlegendentry{R* TR-TSRBLOD BFGS}
+\end{axis}
+
+\end{tikzpicture}

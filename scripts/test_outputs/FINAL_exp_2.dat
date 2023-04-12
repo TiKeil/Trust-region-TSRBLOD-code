@@ -667,6 +667,198 @@ outer iterations: 100
 total walltime:   11316.61 seconds
 mu_error:  0.0006028832919669396
 
+
+________________TR TSRBLOD BFGS_____________________
+
+initializing roms ...
+preparing constants ... constant k finished early...constant j substituted...Initialization took 312.4967s
+extending bases... ... Stage 1 enrichment took 731.1981s
+ ... total stage 1 time is currently 1043.69484
+building_two_scale_model
+construct A ... in 13.52050s
+construct B ... in 2.88642s
+construct C ... in 0.60477s
+construct D ... in 3.81445s
+constructing block operator ... in 0.03612s
+building_two_scale_reductor
+constructing ROM ...extending primal model
+reducing reductor
+residual reduction took 32.19123s
+last estimate is:  [4.72536815e-12]
+building_two_scale_model
+constructing block operator ... in 0.03575s
+building_two_scale_reductor
+extending dual model
+reducing reductor
+residual reduction took 31.86512s
+last dual estimate is:  [9.33167639e-13]
+ ... enrichment completed... length of two scale bases are (1, 1)
+ ... construction took 104.8045s
+ ... total stage 2 time is currently 104.80454
+starting parameter {diffusion: [2.251066014107722, 3.1609734803264744, 1.0003431244520347, 1.9069977178955193, 1.440267672451339, 1.2770157843063934, 1.5587806341330128, 2.036682181129143, 2.19030242269201, 2.616450202010071, 2.2575835432098845, 3.0556585011902784, 1.6133567491945522, 3.6343523091728365, 1.0821627795937785, 3.011402530535207, 2.251914407101381, 2.676069485337255, 1.4211608157857012, 1.5943044672546365, 3.40223370602661, 3.9047847271581926, 1.9402725344777285, 3.0769678470079422], low_diffusion: [1.1752778304592075, 1.1789213327007695, 1.0170088422739556, 1.0078109566465765, 1.0339660839129137, 1.1756285006858826, 1.01966936676661, 1.0842215250010103]}
+Starting value of the cost rom: 1.0508937350287386
+******************************* 
+
+___ starting subproblem
+Computing the approximate Cauchy point and then start the BFGS method
+boundary criterium of the TR satisfied, so stopping the sub-problem solver
+sub-problem took 19.167411485221237
+enriching to check the sufficient decrease condition
+checking global termination before expensive local enrichment
+enriching for mu: {diffusion: [2.4636750302145005, 3.422561319567018, 1.8428618064058888, 2.723283983216002, 2.3487686663616882, 2.084986914598902, 2.1171516206515784, 2.533307251118519, 2.7199204655228204, 3.091009027359215, 2.403836434618461, 3.4854494804187635, 2.093905089777163, 3.6272129653010854, 1.6934764196893535, 3.3650923421887025, 2.502583254196705, 2.5695963749610486, 1.6704902229971184, 1.8186237295933085, 3.5362742064323442, 3.897813860659096, 1.9219217314389225, 2.8691366336841857], low_diffusion: [1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2]}
+extending bases... ... Stage 1 enrichment took 958.2956s
+ ... total stage 1 time is currently 2001.99051
+building_two_scale_model
+construct A ... in 13.44821s
+construct B ... in 3.48003s
+construct C ... in 0.60669s
+construct D ... in 4.04944s
+constructing block operator ... in 0.03579s
+building_two_scale_reductor
+constructing ROM ...extending primal model
+extending primal model
+reducing reductor
+residual reduction took 32.95546s
+last estimate is:  [0.00040817]
+building_two_scale_model
+constructing block operator ... in 0.03576s
+building_two_scale_reductor
+extending dual model
+extending dual model
+reducing reductor
+residual reduction took 31.89875s
+last dual estimate is:  [3.68172892e-05]
+ ... enrichment completed... length of two scale bases are (2, 2)
+ ... construction took 119.6023s
+ ... total stage 2 time is currently 224.40684
+estimate is: [0.00040817]
+k: 0 - j 4 - Cost Functional: 1.022325362243342 - mu: {diffusion: [2.4636750302145005, 3.422561319567018, 1.8428618064058888, 2.723283983216002, 2.3487686663616882, 2.084986914598902, 2.1171516206515784, 2.533307251118519, 2.7199204655228204, 3.091009027359215, 2.403836434618461, 3.4854494804187635, 2.093905089777163, 3.6272129653010854, 1.6934764196893535, 3.3650923421887025, 2.502583254196705, 2.5695963749610486, 1.6704902229971184, 1.8186237295933085, 3.5362742064323442, 3.897813860659096, 1.9219217314389225, 2.8691366336841857], low_diffusion: [1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2]}
+First order critical condition: 0.008236474169468308
+******************************* 
+
+___ starting subproblem
+Computing the approximate Cauchy point and then start the BFGS method
+Subproblem converged: FOC = 1.280943629521229e-05, mu_diff = 3.854538742535922e-12, J_diff = 0.0 
+relative differences mu 3.854538742535922e-12 and J 0.0
+sub-problem took 154.07780758058652
+enriching to check the sufficient decrease condition
+checking global termination before expensive local enrichment
+enriching for mu: {diffusion: [2.5647626178858784, 3.8571536869285974, 3.2885413296883055, 3.995954733987077, 3.9929621648943803, 3.045256599589717, 4.0, 4.0, 4.0, 4.0, 1.004234979217011, 3.995202726008693, 3.637919202352529, 1.8779061636780314, 3.9790897826662235, 3.9116028414002564, 3.5147864522983605, 1.1700448468904379, 1.8246085253660715, 1.803850268233138, 3.412678304256248, 2.8219780341000797, 1.2913288304709472, 1.0], low_diffusion: [1.1811842211697092, 1.0222834491049795, 1.0639854658392025, 1.048857590801753, 1.1814407529036157, 1.1814407529036166, 1.179859692058385, 1.1798596920583664]}
+extending bases... ... Stage 1 enrichment took 1108.2658s
+ ... total stage 1 time is currently 3110.25643
+building_two_scale_model
+construct A ... in 13.41002s
+construct B ... in 3.33114s
+construct C ... in 0.60740s
+construct D ... in 4.29072s
+constructing block operator ... in 0.03562s
+building_two_scale_reductor
+constructing ROM ...extending primal model
+extending primal model
+extending primal model
+reducing reductor
+residual reduction took 33.38973s
+last estimate is:  [0.00029653]
+building_two_scale_model
+constructing block operator ... in 0.03582s
+building_two_scale_reductor
+extending dual model
+extending dual model
+extending dual model
+reducing reductor
+residual reduction took 31.93299s
+last dual estimate is:  [2.42640447e-06]
+ ... enrichment completed... length of two scale bases are (3, 3)
+ ... construction took 133.6482s
+ ... total stage 2 time is currently 358.05503
+estimate is: [0.00029653]
+k: 1 - j 50 - Cost Functional: 1.0000252048574145 - mu: {diffusion: [2.5647626178858784, 3.8571536869285974, 3.2885413296883055, 3.995954733987077, 3.9929621648943803, 3.045256599589717, 4.0, 4.0, 4.0, 4.0, 1.004234979217011, 3.995202726008693, 3.637919202352529, 1.8779061636780314, 3.9790897826662235, 3.9116028414002564, 3.5147864522983605, 1.1700448468904379, 1.8246085253660715, 1.803850268233138, 3.412678304256248, 2.8219780341000797, 1.2913288304709472, 1.0], low_diffusion: [1.1811842211697092, 1.0222834491049795, 1.0639854658392025, 1.048857590801753, 1.1814407529036157, 1.1814407529036166, 1.179859692058385, 1.1798596920583664]}
+First order critical condition: 0.0003695440526931356
+******************************* 
+
+___ starting subproblem
+Computing the approximate Cauchy point and then start the BFGS method
+Subproblem converged: FOC = 6.385175120629763e-06, mu_diff = 6.591186211573493e-12, J_diff = 4.440888149970432e-16 
+relative differences mu 6.591186211573493e-12 and J 4.440888149970432e-16
+sub-problem took 133.34078353876248
+enriching to check the sufficient decrease condition
+checking global termination before expensive local enrichment
+enriching for mu: {diffusion: [2.5499747320823523, 3.8390574853807484, 3.2932429601089788, 3.9947250354793296, 3.99686135392961, 3.0554826043009173, 3.9971080437218167, 3.9971080437218167, 3.9969461963292154, 3.9969461963292154, 1.006156502590639, 3.9936094745142428, 3.6561326168496957, 1.9023521673033088, 4.0, 3.9364172748705806, 3.5374338243579184, 1.1972564496087326, 1.8898989708299965, 1.8694603402983443, 3.472694782426386, 2.883796620341296, 1.3354128767569513, 1.0065707374928305], low_diffusion: [1.1919437725053321, 1.0303503379973205, 1.0869252454583964, 1.071901051771962, 1.2, 1.2, 1.2, 1.2]}
+extending bases... ... Stage 1 enrichment took 932.2542s
+ ... total stage 1 time is currently 4042.51071
+building_two_scale_model
+construct A ... in 13.45786s
+construct B ... in 3.32975s
+construct C ... in 0.60677s
+construct D ... in 4.34337s
+constructing block operator ... in 0.03603s
+building_two_scale_reductor
+constructing ROM ...extending primal model
+extending primal model
+extending primal model
+extending primal model
+reducing reductor
+residual reduction took 33.72001s
+last estimate is:  [0.00032011]
+building_two_scale_model
+constructing block operator ... in 0.03587s
+building_two_scale_reductor
+extending dual model
+extending dual model
+extending dual model
+extending dual model
+reducing reductor
+residual reduction took 32.32164s
+last dual estimate is:  [1.59373945e-07]
+ ... enrichment completed... length of two scale bases are (4, 4)
+ ... construction took 146.8871s
+ ... total stage 2 time is currently 504.94217
+estimate is: [0.00032011]
+k: 2 - j 26 - Cost Functional: 1.0000002651043431 - mu: {diffusion: [2.5499747320823523, 3.8390574853807484, 3.2932429601089788, 3.9947250354793296, 3.99686135392961, 3.0554826043009173, 3.9971080437218167, 3.9971080437218167, 3.9969461963292154, 3.9969461963292154, 1.006156502590639, 3.9936094745142428, 3.6561326168496957, 1.9023521673033088, 4.0, 3.9364172748705806, 3.5374338243579184, 1.1972564496087326, 1.8898989708299965, 1.8694603402983443, 3.472694782426386, 2.883796620341296, 1.3354128767569513, 1.0065707374928305], low_diffusion: [1.1919437725053321, 1.0303503379973205, 1.0869252454583964, 1.071901051771962, 1.2, 1.2, 1.2, 1.2]}
+enlarging the TR radius to 0.2
+First order critical condition: 3.0448067061863797e-05
+******************************* 
+
+___ starting subproblem
+Computing the approximate Cauchy point and then start the BFGS method
+Subproblem converged: FOC = 2.17646287533498e-09, mu_diff = 3.7948422157904635e-07, J_diff = 1.0267342502579764e-12 
+relative differences mu 3.7948422157904635e-07 and J 1.0267342502579764e-12
+sub-problem took 53.20053828600794
+enriching to check the sufficient decrease condition
+checking global termination before expensive local enrichment
+k: 3 - j 25 - Cost Functional: 1.0000000028384308 - mu: {diffusion: [2.55183749023143, 3.840831689872285, 3.2962886346328215, 3.9999083972090452, 3.9999361939349694, 3.0586029860387445, 3.9999341709314575, 3.9999341709314575, 3.9999274308168213, 3.9999274308168213, 1.0075962862290477, 4.0, 3.654864278180108, 1.9012506562903293, 4.0, 3.935335388303758, 3.535295024663575, 1.1952398206351829, 1.8843129076016674, 1.8638828325122607, 3.467512150114825, 2.8786622250402605, 1.3314287620227785, 1.001582504362454], low_diffusion: [1.1884789053592328, 1.028345155336579, 1.0845035159994338, 1.0694820975505885, 1.2, 1.2, 1.2, 1.2]}
+enlarging the TR radius to 0.4
+First order critical condition: 7.735888419499708e-07
+******************************* 
+
+
+Stopping criteria fulfilled: FOC condition: 7.735888419499708e-07
+Sub-problems took 359.78657s
+Computing only the initial FOC
+
+________________TR TSRBLOD BFGS_____________________
+
+
+PG--LOD FOM solves: 
+        Coarse LOD system solves:               10
+        Local corrector solves:                 5
+        Total local corrector system solves:    32000 (solves x patches x shape functions: 5 x 1600 x 4)
+
+RBLOD solves: 
+        Coarse LOD system solves:               20
+        Local corrector solves:                 20
+        Total local corrector system solves:    128000  (solves x patches x shape functions: 20 x 1600 x 4)
+
+
+TSRBLOD solves:
+        TSRBLOD ROM solves:                     938
+
+outer iterations: 5
+total walltime:   5392.95 seconds
+mu_error:  0.0004531891526912716
+further timings:
+ subproblem:  359.787
+
 ________________Relaxed TR TSRBLOD BFGS_____________________
 
 initializing roms ...
@@ -885,195 +1077,3 @@ total walltime:   2998.26 seconds
 mu_error:  0.00013690546621828034
 further timings:
  subproblem:  5.275
-
-________________TR TSRBLOD BFGS_____________________
-
-initializing roms ...
-preparing constants ... constant k finished early...constant j substituted...Initialization took 312.4967s
-extending bases... ... Stage 1 enrichment took 731.1981s
- ... total stage 1 time is currently 1043.69484
-building_two_scale_model
-construct A ... in 13.52050s
-construct B ... in 2.88642s
-construct C ... in 0.60477s
-construct D ... in 3.81445s
-constructing block operator ... in 0.03612s
-building_two_scale_reductor
-constructing ROM ...extending primal model
-reducing reductor
-residual reduction took 32.19123s
-last estimate is:  [4.72536815e-12]
-building_two_scale_model
-constructing block operator ... in 0.03575s
-building_two_scale_reductor
-extending dual model
-reducing reductor
-residual reduction took 31.86512s
-last dual estimate is:  [9.33167639e-13]
- ... enrichment completed... length of two scale bases are (1, 1)
- ... construction took 104.8045s
- ... total stage 2 time is currently 104.80454
-starting parameter {diffusion: [2.251066014107722, 3.1609734803264744, 1.0003431244520347, 1.9069977178955193, 1.440267672451339, 1.2770157843063934, 1.5587806341330128, 2.036682181129143, 2.19030242269201, 2.616450202010071, 2.2575835432098845, 3.0556585011902784, 1.6133567491945522, 3.6343523091728365, 1.0821627795937785, 3.011402530535207, 2.251914407101381, 2.676069485337255, 1.4211608157857012, 1.5943044672546365, 3.40223370602661, 3.9047847271581926, 1.9402725344777285, 3.0769678470079422], low_diffusion: [1.1752778304592075, 1.1789213327007695, 1.0170088422739556, 1.0078109566465765, 1.0339660839129137, 1.1756285006858826, 1.01966936676661, 1.0842215250010103]}
-Starting value of the cost rom: 1.0508937350287386
-******************************* 
-
-___ starting subproblem
-Computing the approximate Cauchy point and then start the BFGS method
-boundary criterium of the TR satisfied, so stopping the sub-problem solver
-sub-problem took 19.167411485221237
-enriching to check the sufficient decrease condition
-checking global termination before expensive local enrichment
-enriching for mu: {diffusion: [2.4636750302145005, 3.422561319567018, 1.8428618064058888, 2.723283983216002, 2.3487686663616882, 2.084986914598902, 2.1171516206515784, 2.533307251118519, 2.7199204655228204, 3.091009027359215, 2.403836434618461, 3.4854494804187635, 2.093905089777163, 3.6272129653010854, 1.6934764196893535, 3.3650923421887025, 2.502583254196705, 2.5695963749610486, 1.6704902229971184, 1.8186237295933085, 3.5362742064323442, 3.897813860659096, 1.9219217314389225, 2.8691366336841857], low_diffusion: [1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2]}
-extending bases... ... Stage 1 enrichment took 958.2956s
- ... total stage 1 time is currently 2001.99051
-building_two_scale_model
-construct A ... in 13.44821s
-construct B ... in 3.48003s
-construct C ... in 0.60669s
-construct D ... in 4.04944s
-constructing block operator ... in 0.03579s
-building_two_scale_reductor
-constructing ROM ...extending primal model
-extending primal model
-reducing reductor
-residual reduction took 32.95546s
-last estimate is:  [0.00040817]
-building_two_scale_model
-constructing block operator ... in 0.03576s
-building_two_scale_reductor
-extending dual model
-extending dual model
-reducing reductor
-residual reduction took 31.89875s
-last dual estimate is:  [3.68172892e-05]
- ... enrichment completed... length of two scale bases are (2, 2)
- ... construction took 119.6023s
- ... total stage 2 time is currently 224.40684
-estimate is: [0.00040817]
-k: 0 - j 4 - Cost Functional: 1.022325362243342 - mu: {diffusion: [2.4636750302145005, 3.422561319567018, 1.8428618064058888, 2.723283983216002, 2.3487686663616882, 2.084986914598902, 2.1171516206515784, 2.533307251118519, 2.7199204655228204, 3.091009027359215, 2.403836434618461, 3.4854494804187635, 2.093905089777163, 3.6272129653010854, 1.6934764196893535, 3.3650923421887025, 2.502583254196705, 2.5695963749610486, 1.6704902229971184, 1.8186237295933085, 3.5362742064323442, 3.897813860659096, 1.9219217314389225, 2.8691366336841857], low_diffusion: [1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2]}
-First order critical condition: 0.008236474169468308
-******************************* 
-
-___ starting subproblem
-Computing the approximate Cauchy point and then start the BFGS method
-Subproblem converged: FOC = 1.280943629521229e-05, mu_diff = 3.854538742535922e-12, J_diff = 0.0 
-relative differences mu 3.854538742535922e-12 and J 0.0
-sub-problem took 154.07780758058652
-enriching to check the sufficient decrease condition
-checking global termination before expensive local enrichment
-enriching for mu: {diffusion: [2.5647626178858784, 3.8571536869285974, 3.2885413296883055, 3.995954733987077, 3.9929621648943803, 3.045256599589717, 4.0, 4.0, 4.0, 4.0, 1.004234979217011, 3.995202726008693, 3.637919202352529, 1.8779061636780314, 3.9790897826662235, 3.9116028414002564, 3.5147864522983605, 1.1700448468904379, 1.8246085253660715, 1.803850268233138, 3.412678304256248, 2.8219780341000797, 1.2913288304709472, 1.0], low_diffusion: [1.1811842211697092, 1.0222834491049795, 1.0639854658392025, 1.048857590801753, 1.1814407529036157, 1.1814407529036166, 1.179859692058385, 1.1798596920583664]}
-extending bases... ... Stage 1 enrichment took 1108.2658s
- ... total stage 1 time is currently 3110.25643
-building_two_scale_model
-construct A ... in 13.41002s
-construct B ... in 3.33114s
-construct C ... in 0.60740s
-construct D ... in 4.29072s
-constructing block operator ... in 0.03562s
-building_two_scale_reductor
-constructing ROM ...extending primal model
-extending primal model
-extending primal model
-reducing reductor
-residual reduction took 33.38973s
-last estimate is:  [0.00029653]
-building_two_scale_model
-constructing block operator ... in 0.03582s
-building_two_scale_reductor
-extending dual model
-extending dual model
-extending dual model
-reducing reductor
-residual reduction took 31.93299s
-last dual estimate is:  [2.42640447e-06]
- ... enrichment completed... length of two scale bases are (3, 3)
- ... construction took 133.6482s
- ... total stage 2 time is currently 358.05503
-estimate is: [0.00029653]
-k: 1 - j 50 - Cost Functional: 1.0000252048574145 - mu: {diffusion: [2.5647626178858784, 3.8571536869285974, 3.2885413296883055, 3.995954733987077, 3.9929621648943803, 3.045256599589717, 4.0, 4.0, 4.0, 4.0, 1.004234979217011, 3.995202726008693, 3.637919202352529, 1.8779061636780314, 3.9790897826662235, 3.9116028414002564, 3.5147864522983605, 1.1700448468904379, 1.8246085253660715, 1.803850268233138, 3.412678304256248, 2.8219780341000797, 1.2913288304709472, 1.0], low_diffusion: [1.1811842211697092, 1.0222834491049795, 1.0639854658392025, 1.048857590801753, 1.1814407529036157, 1.1814407529036166, 1.179859692058385, 1.1798596920583664]}
-First order critical condition: 0.0003695440526931356
-******************************* 
-
-___ starting subproblem
-Computing the approximate Cauchy point and then start the BFGS method
-Subproblem converged: FOC = 6.385175120629763e-06, mu_diff = 6.591186211573493e-12, J_diff = 4.440888149970432e-16 
-relative differences mu 6.591186211573493e-12 and J 4.440888149970432e-16
-sub-problem took 133.34078353876248
-enriching to check the sufficient decrease condition
-checking global termination before expensive local enrichment
-enriching for mu: {diffusion: [2.5499747320823523, 3.8390574853807484, 3.2932429601089788, 3.9947250354793296, 3.99686135392961, 3.0554826043009173, 3.9971080437218167, 3.9971080437218167, 3.9969461963292154, 3.9969461963292154, 1.006156502590639, 3.9936094745142428, 3.6561326168496957, 1.9023521673033088, 4.0, 3.9364172748705806, 3.5374338243579184, 1.1972564496087326, 1.8898989708299965, 1.8694603402983443, 3.472694782426386, 2.883796620341296, 1.3354128767569513, 1.0065707374928305], low_diffusion: [1.1919437725053321, 1.0303503379973205, 1.0869252454583964, 1.071901051771962, 1.2, 1.2, 1.2, 1.2]}
-extending bases... ... Stage 1 enrichment took 932.2542s
- ... total stage 1 time is currently 4042.51071
-building_two_scale_model
-construct A ... in 13.45786s
-construct B ... in 3.32975s
-construct C ... in 0.60677s
-construct D ... in 4.34337s
-constructing block operator ... in 0.03603s
-building_two_scale_reductor
-constructing ROM ...extending primal model
-extending primal model
-extending primal model
-extending primal model
-reducing reductor
-residual reduction took 33.72001s
-last estimate is:  [0.00032011]
-building_two_scale_model
-constructing block operator ... in 0.03587s
-building_two_scale_reductor
-extending dual model
-extending dual model
-extending dual model
-extending dual model
-reducing reductor
-residual reduction took 32.32164s
-last dual estimate is:  [1.59373945e-07]
- ... enrichment completed... length of two scale bases are (4, 4)
- ... construction took 146.8871s
- ... total stage 2 time is currently 504.94217
-estimate is: [0.00032011]
-k: 2 - j 26 - Cost Functional: 1.0000002651043431 - mu: {diffusion: [2.5499747320823523, 3.8390574853807484, 3.2932429601089788, 3.9947250354793296, 3.99686135392961, 3.0554826043009173, 3.9971080437218167, 3.9971080437218167, 3.9969461963292154, 3.9969461963292154, 1.006156502590639, 3.9936094745142428, 3.6561326168496957, 1.9023521673033088, 4.0, 3.9364172748705806, 3.5374338243579184, 1.1972564496087326, 1.8898989708299965, 1.8694603402983443, 3.472694782426386, 2.883796620341296, 1.3354128767569513, 1.0065707374928305], low_diffusion: [1.1919437725053321, 1.0303503379973205, 1.0869252454583964, 1.071901051771962, 1.2, 1.2, 1.2, 1.2]}
-enlarging the TR radius to 0.2
-First order critical condition: 3.0448067061863797e-05
-******************************* 
-
-___ starting subproblem
-Computing the approximate Cauchy point and then start the BFGS method
-Subproblem converged: FOC = 2.17646287533498e-09, mu_diff = 3.7948422157904635e-07, J_diff = 1.0267342502579764e-12 
-relative differences mu 3.7948422157904635e-07 and J 1.0267342502579764e-12
-sub-problem took 53.20053828600794
-enriching to check the sufficient decrease condition
-checking global termination before expensive local enrichment
-k: 3 - j 25 - Cost Functional: 1.0000000028384308 - mu: {diffusion: [2.55183749023143, 3.840831689872285, 3.2962886346328215, 3.9999083972090452, 3.9999361939349694, 3.0586029860387445, 3.9999341709314575, 3.9999341709314575, 3.9999274308168213, 3.9999274308168213, 1.0075962862290477, 4.0, 3.654864278180108, 1.9012506562903293, 4.0, 3.935335388303758, 3.535295024663575, 1.1952398206351829, 1.8843129076016674, 1.8638828325122607, 3.467512150114825, 2.8786622250402605, 1.3314287620227785, 1.001582504362454], low_diffusion: [1.1884789053592328, 1.028345155336579, 1.0845035159994338, 1.0694820975505885, 1.2, 1.2, 1.2, 1.2]}
-enlarging the TR radius to 0.4
-First order critical condition: 7.735888419499708e-07
-******************************* 
-
-
-Stopping criteria fulfilled: FOC condition: 7.735888419499708e-07
-Sub-problems took 359.78657s
-Computing only the initial FOC
-
-________________TR TSRBLOD BFGS_____________________
-
-
-PG--LOD FOM solves: 
-        Coarse LOD system solves:               10
-        Local corrector solves:                 5
-        Total local corrector system solves:    32000 (solves x patches x shape functions: 5 x 1600 x 4)
-
-RBLOD solves: 
-        Coarse LOD system solves:               20
-        Local corrector solves:                 20
-        Total local corrector system solves:    128000  (solves x patches x shape functions: 20 x 1600 x 4)
-
-
-TSRBLOD solves:
-        TSRBLOD ROM solves:                     938
-
-outer iterations: 5
-total walltime:   5392.95 seconds
-mu_error:  0.0004531891526912716
-further timings:
- subproblem:  359.787
-
