@@ -1,15 +1,16 @@
 # ~~~
 # This file is part of the paper:
 #
-#  "A NON-CONFORMING DUAL APPROACH FOR ADAPTIVE TRUST-REGION REDUCED BASIS
-#           APPROXIMATION OF PDE-CONSTRAINED OPTIMIZATION"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
-#   https://github.com/TiKeil/NCD-corrected-TR-RB-approach-for-pde-opt
+# by: Tim Keil and Mario Ohlberger
 #
-# Copyright 2019-2020 all developers. All rights reserved.
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2019 - 2020)
+# Author: Tim Keil 
 # ~~~
 
 import numpy as np

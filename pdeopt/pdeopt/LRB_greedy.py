@@ -1,6 +1,17 @@
-# This file is part of the pyMOR project (https://www.pymor.org).
-# Copyright 2013-2021 pyMOR developers and contributors. All rights reserved.
-# License: BSD 2-Clause License (https://opensource.org/licenses/BSD-2-Clause)
+# ~~~
+# This file is part of the paper:
+#
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Author: Tim Keil 
+# ~~~
 
 import numpy as np
 

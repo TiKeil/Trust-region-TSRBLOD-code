@@ -1,5 +1,21 @@
 #!/usr/bin/env python
-#  coding: utf-8
+#   coding: utf-8
+
+#
+# ~~~
+# This file is part of the paper:
+#
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
+#
+# by: Tim Keil and Mario Ohlberger
+#
+#   https://github.com/TiKeil/Trust-region-TSRBLOD-code
+#
+# Copyright all developers. All rights reserved.
+# License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Author: Tim Keil 
+# ~~~
 
 #
 # ~~~

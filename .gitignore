@@ -13,6 +13,9 @@ __pycache__/
 .Python
 notebooks/tmp/
 scripts/tmp/
+scripts/tmp0/
+scripts/tmp1/
+scripts/tmp2/
 env/
 build/
 develop-eggs/

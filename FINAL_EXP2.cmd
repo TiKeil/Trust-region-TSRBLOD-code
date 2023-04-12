@@ -26,7 +26,7 @@ export GOTO_NUM_THREADS=1
 export OMPI_MCA_mpi_warn_on_fork=0
 
 echo "Launching job:"
-srun /home/t/t_keil02/tr_tsrblod_github/venv/bin/python -u /home/t/t_keil02/tr_tsrblod_github/scripts/FINAL_exp_2.py
+srun /home/t/t_keil02/tr_tsrblod_github/venv/bin/python -u /home/t/t_keil02/tr_tsrblod_github/scripts/run_experiment.py 2
 
 if [ $? -eq 0 ]
 then

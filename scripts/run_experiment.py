@@ -1,28 +1,24 @@
-#!/usr/bin/env python
-#   coding: utf-8
-
-#
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 
-EXPERIMENT_1 = False
-EXPERIMENT_2 = True
-MINIMAL = False
+import sys
+assert len(sys.argv) == 2, "Please indicate the experiment ID as an integer 0-2"
+assert isinstance(int(sys.argv[1]), int)        # EXPERIMENT ID
+exp_ID = int(sys.argv[1])
 
-if EXPERIMENT_1:
+if exp_ID == 1:  # EXPERIMENT 1
     coarse_elements = 20
     n = 1200
     use_FEM = True
@@ -31,7 +27,7 @@ if EXPERIMENT_1:
     ### FOC TOLERANCES
     FEM_FOC_tolerance = 1e-4  # tau_FOC for FEM
     LOD_FOC_tolerance = 1e-6  # tau_FOC for LOD
-elif EXPERIMENT_2:
+elif exp_ID == 2:  # EXPERIMENT 2
     coarse_elements = 40
     n = 4000
     use_FEM = False
@@ -39,8 +35,8 @@ elif EXPERIMENT_2:
     use_LOD = True
     ### FOC TOLERANCES
     FEM_FOC_tolerance = 1e-4  # tau_FOC for FEM
-    LOD_FOC_tolerance = 5e-6  # tau_FOC for LOD
-elif MINIMAL:
+    LOD_FOC_tolerance = 1e-6  # tau_FOC for LOD
+elif exp_ID == 0:  # MINIMAL EXPERIMENT
     coarse_elements = 2
     n = 40
     use_FEM = True
@@ -52,12 +48,6 @@ elif MINIMAL:
 else:
     # define your own experiment config!
     assert 0
-
-"""
-######################################################################
-    # NOTE: THE REST OF THE SCRIPT IS THE SAME FOR ALL EXPERIMENTS !!!
-######################################################################
-"""
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -78,16 +68,20 @@ use_pool = True
 if use_pool:
     from pymor.parallel.mpi import MPIPool
     pool = MPIPool()
-    store_in_tmp = '/scratch/tmp/t_keil02/tr_tsrblod/tmp'  # <---- adjust this depending on your HPC system
-    test_outputs_file = '/scratch/tmp/t_keil02/tr_tsrblod/final/test_outputs' # <---- adjust this depending on your HPC system
-    # store_in_tmp = 'tmp'
-    # test_outputs_file = 'test_outputs'
+    # store_in_tmp = f'/scratch/tmp/t_keil02/tr_tsrblod/tmp{exp_ID}'  # <---- adjust this depending on your HPC system
+    # test_outputs_file = '/scratch/tmp/t_keil02/tr_tsrblod/final/test_outputs' # <---- adjust this depending on your HPC system
+    store_in_tmp = f'tmp{exp_ID}'
+    test_outputs_file = 'test_outputs'
 else:
     from pymor.parallel.dummy import DummyPool
     pool = DummyPool()
     store_in_tmp = False
 pool.apply(prepare_kernels)
 print_on_ranks = False
+
+print(f"\n ###################################################################### \n"
+      f" #                      EXPERIMENT ID : {exp_ID} \n"
+      f" ###################################################################### \n")
 
 """
     fixed variables
@@ -241,19 +235,30 @@ mu = problem.parameters.parse(mu_array)
 
 # ### What methods do you want to test ?
 
-optimization_methods = [
-    # FOM Method
-    # 'BFGS',
-    'BFGS_LOD',
-    # TR-RB
-        # NCD-corrected from KMSOV'20
-        # 'Method_RB', # TR-RB
-        # localized BFGS
-        'Method_TSRBLOD',
-    # R TR Methods
-      # 'Method_R_TR',
-      'Method_R_TR_STAR'
-]
+if exp_ID in [0, 1]:
+    optimization_methods = [
+        # FOM Method
+        'BFGS',
+        'BFGS_LOD',
+        # TR-RB
+            # NCD-corrected from KMSOV'20
+            'Method_RB', # TR-RB
+            # localized BFGS
+            'Method_TSRBLOD',
+        # R TR Methods
+          'Method_R_TR',
+          'Method_R_TR_STAR'
+    ]
+else:
+    optimization_methods = [
+        # FOM Method
+        # 'BFGS_LOD',
+        # TR-RB
+            # localized BFGS
+            'Method_TSRBLOD',
+        # R TR Methods
+          'Method_R_TR_STAR'
+    ]
 
 #optimization_methods = ['All']
 
@@ -665,7 +670,6 @@ if 'Method_TSRBLOD' in optimization_methods or 'All' in optimization_methods:
                                                      reference_time=reference_time)
     print_further_timings(TSTRRBLOD_dict_timings)
 
-
 lod_counter.reset_counters()
 
 # R TR TSRBLOD !!
@@ -823,7 +827,7 @@ plt.xlabel('time in seconds [s]')
 plt.ylabel('True optimization error of the output functional')
 plt.grid()
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-tikzplotlib.save(f'{test_outputs_file}/exp_2_J_error.tex')
+tikzplotlib.save(f'{test_outputs_file}/exp_{exp_ID}_J_error.tex')
 
 # ### Plot FOC
 
@@ -850,7 +854,7 @@ plt.ylabel('First-order critical condition')
 # plt.xlim([-1,30])
 plt.grid()
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-tikzplotlib.save(f'{test_outputs_file}/exp_2_FOC.tex')
+tikzplotlib.save(f'{test_outputs_file}/exp_{exp_ID}_FOC.tex')
 
 # ### Plot Mu error
 
@@ -877,7 +881,7 @@ plt.ylabel('Mu error')
 #plt.xlim([-1,100])
 plt.grid()
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-tikzplotlib.save(f'{test_outputs_file}/exp_2_mu_error.tex')
+tikzplotlib.save(f'{test_outputs_file}/exp_{exp_ID}_mu_error.tex')
 
 if pool is not None:
    del pool

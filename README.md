@@ -2,23 +2,22 @@
 # ~~~
 # This file is part of the paper:
 #
-#           "A relaxed localized trust-region reduced basis approach for
-#                      optimization of multiscale problems"
+#           "A Relaxed Localized Trust-Region Reduced Basis Approach for
+#                      Optimization of Multiscale Problems"
 #
 # by: Tim Keil and Mario Ohlberger
 #
 #   https://github.com/TiKeil/Trust-region-TSRBLOD-code
 #
-# Copyright 2019-2022 all developers. All rights reserved.
+# Copyright all developers. All rights reserved.
 # License: Licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-# Authors:
-#   Tim Keil (2022)
+# Author: Tim Keil 
 # ~~~
 ```
 
 In this repository, we provide the code for the numerical experiments in Section 5
-of the paper **"tba"** by Tim Keil and Mario Ohlberger.
-The preprint is available [here](https://arxiv.org/).
+of the paper **"A Relaxed Localized Trust-Region Reduced Basis Approach for Optimization of Multiscale Problems"** by Tim Keil and Mario Ohlberger.
+The preprint is available [here](https://arxiv.org/abs/2203.09964).
 
 For just taking a look at the experiment outputs and data, you do not need to
 install the software. Just go to `scripts/test_outputs/`,
@@ -103,8 +102,8 @@ cd Trust-region-TSRBLOD-code
 
 You can make sure your that setup is complete by running the minimal test script
 ```
-cd scripts/test_scripts
-mpirun python minimal_test.py
+cd scripts
+mpirun python run_experiment.py 0
 ```
 
 If this works fine (with a summary of methods in the end), your setup is working well.
