@@ -270,22 +270,29 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
         return self.uncorrected_output_functional_hat_d_mu(component, index, mu, U, P)
 
     def uncorrected_output_functional_hat_d_mu(self, component, index, mu, U=None, P=None, **kwargs):
-        if U is None:
-            U = self.solve(mu=mu, **kwargs)
-        if P is None:
-            P = self.solve_dual(mu=mu, U=U, **kwargs)
         output_coefficient = self.output_functional_dict['output_coefficient']
         J_dmu = output_coefficient.d_mu(component, index).evaluate(mu)
-        if self.dual_model is not None:  # This is a cheat for detecting if it's a rom
-            projected_op = self.output_functional_dict['dual_primal_projected_op']
-            projected_rhs = self.output_functional_dict['dual_projected_rhs']
-            residual_dmu_lhs = projected_op.d_mu(component, index).apply2(P, U, mu=mu)
-            residual_dmu_rhs = projected_rhs.d_mu(component, index).apply_adjoint(P, mu=mu).to_numpy()[0,0]
+        if U is None:
+            U = self.solve(mu=mu, **kwargs)
+        if self.dual_model is None and self.is_rom and 0:       # <---- enable this to skip the dual problems entirely !! 
+            U_d_mu = self.primal_model._compute_solution_d_mu_single_direction(component, index, U, mu)
+            linear = self.output_functional_dict['linear_part'].apply_adjoint(U_d_mu, mu).to_numpy()[0, 0]
+            bilinear = self.output_functional_dict['bilinear_part'].apply2(U_d_mu, U, mu)[0, 0]
+            retval = J_dmu + linear + 2 * bilinear
         else:
-            residual_dmu_lhs = self.primal_model.operator.d_mu(component, index).apply2(P, U, mu=mu)
-            residual_dmu_rhs = self.primal_model.rhs.d_mu(component, index).apply_adjoint(P, mu=mu).to_numpy()[0,0]
-        # print(J_dmu, residual_dmu_lhs, residual_dmu_rhs)
-        return (J_dmu - residual_dmu_lhs + residual_dmu_rhs)[0,0]
+            if P is None:
+                P = self.solve_dual(mu=mu, U=U, **kwargs)
+            if self.dual_model is not None:  # This is a cheat for detecting if it's a rom
+                projected_op = self.output_functional_dict['dual_primal_projected_op']
+                projected_rhs = self.output_functional_dict['dual_projected_rhs']
+                residual_dmu_lhs = projected_op.d_mu(component, index).apply2(P, U, mu=mu)
+                residual_dmu_rhs = projected_rhs.d_mu(component, index).apply_adjoint(P, mu=mu).to_numpy()[0, 0]
+            else:
+                residual_dmu_lhs = self.primal_model.operator.d_mu(component, index).apply2(P, U, mu=mu)
+                residual_dmu_rhs = self.primal_model.rhs.d_mu(component, index).apply_adjoint(P, mu=mu).to_numpy()[0, 0]
+            # print(J_dmu, residual_dmu_lhs, residual_dmu_rhs)
+            retval = (J_dmu - residual_dmu_lhs + residual_dmu_rhs)[0, 0]
+        return retval
 
     def adjoint_corrected_output_functional_hat_d_mu(self, component, index, mu, U=None, P=None,
                                                      Z=None, W=None, **kwargs):
@@ -330,19 +337,24 @@ class QuadraticPdeoptStationaryModel(StationaryModel):
             if self.dual_model is not None:
                 adjoint_approach = self.adjoint_approach
         gradient = []
-        if U is None:
-            U = self.solve(mu=mu, **kwargs)
-        if P is None:
-            P = self.solve_dual(mu=mu, U=U, **kwargs)
-        if adjoint_approach:
-            Z = self.solve_auxiliary_dual_problem(mu, U=U)
-            W = self.solve_auxiliary_primal_problem(mu, Z=Z, U=U, P=P)
-        for (key, size) in sorted(self.primal_model.parameters.items()):
-            for l in range(size):
-                if adjoint_approach:
-                    gradient.append(self.adjoint_corrected_output_functional_hat_d_mu(key, l, mu, U, P, Z, W))
-                else:
+        if self.dual_model is None and self.is_rom and 0:
+            for (key, size) in sorted(self.primal_model.parameters.items()):
+                for l in range(size):
                     gradient.append(self.output_functional_hat_d_mu(key, l, mu, U, P))
+        else:
+            if U is None:
+                U = self.solve(mu=mu, **kwargs)
+            if P is None:
+                P = self.solve_dual(mu=mu, U=U, **kwargs)
+            if adjoint_approach:
+                Z = self.solve_auxiliary_dual_problem(mu, U=U)
+                W = self.solve_auxiliary_primal_problem(mu, Z=Z, U=U, P=P)
+            for (key, size) in sorted(self.primal_model.parameters.items()):
+                for l in range(size):
+                    if adjoint_approach:
+                        gradient.append(self.adjoint_corrected_output_functional_hat_d_mu(key, l, mu, U, P, Z, W))
+                    else:
+                        gradient.append(self.output_functional_hat_d_mu(key, l, mu, U, P))
         gradient = np.array(gradient)
         return gradient
 

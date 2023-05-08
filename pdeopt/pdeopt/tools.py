@@ -16,6 +16,7 @@
 
 import numpy as np
 
+
 class LODEvaluationCounter:
     def __init__(self):
         self.coarse_with_ROM_counter = 0
@@ -129,6 +130,52 @@ class EvaluationCounter:
             # print(f"*****************FEM SOLVE : {self.FOM_counter}")
 
 
+class LRB_EvaluationCounter:
+    def __init__(self):
+        self.ROM_counter = 0
+        self.FOM_counter = 0
+        self.loc_counter = 0
+
+    def number_of_fom_solves(self):
+        return self.FOM_counter
+
+    def number_of_rom_solves(self):
+        return self.ROM_counter
+
+    def reset_rom_counter(self):
+        self.ROM_counter = 0
+
+    def reset_fom_counter(self):
+        self.FOM_counter = 0
+
+    def reset_loc_counter(self):
+        self.loc_counter = 0
+
+    def reset_counters(self):
+        self.reset_fom_counter()
+        self.reset_rom_counter()
+        self.reset_loc_counter()
+
+    def print_result(self, return_dict=False):
+        print(f"\nIPL solves:    {self.FOM_counter}")
+        print(f"LRB solves:    {self.ROM_counter}")
+        print(f"Local solves:  {self.loc_counter}\n")
+        if return_dict:
+            return dict(FEM=self.FOM_counter, RB=self.ROM_counter,
+                        loc=self.loc_counter)
+
+    def count(self, is_rom=False):
+        if is_rom:
+            self.ROM_counter += 1
+            # print(f"*****************RB SOLVE : {self.ROM_counter}")
+        else:
+            self.FOM_counter += 1
+            # print(f"*****************FEM SOLVE : {self.FOM_counter}")
+
+    def local_count(self):
+        self.loc_counter += 1
+
+
 def print_RB_result(dict):
     print(f"FEM solves:   {dict['FEM']}")
     print(f"RB solves:    {dict['RB']}")
@@ -164,15 +211,16 @@ def plot_functional(opt_fom, steps, ranges):
     import matplotlib.pyplot as plt
     import numpy as np
 
-    mu_first_component = np.linspace(ranges[0][0],ranges[0][1],first_component_steps)
-    mu_second_component = np.linspace(ranges[1][0],ranges[1][1],second_component_steps)
+    mu_first_component = np.linspace(ranges[0][0], ranges[0][1], first_component_steps)
+    mu_second_component = np.linspace(ranges[1][0], ranges[1][1], second_component_steps)
 
-    x1,y1 = np.meshgrid(mu_first_component,mu_second_component)
-    func_ = np.zeros([second_component_steps,first_component_steps]) #meshgrid shape the first component as column index
+    x1, y1 = np.meshgrid(mu_first_component, mu_second_component)
+    func_ = np.zeros([second_component_steps, first_component_steps])
+    # meshgrid shape the first component as column index
 
     for i in range(first_component_steps):
         for j in range(second_component_steps):
-            mu_ = opt_fom.parameters.parse([x1[j][i],y1[j][i]])
+            mu_ = opt_fom.parameters.parse([x1[j][i], y1[j][i]])
             func_[j][i] = opt_fom.output_functional_hat(mu_)
 
     fig = plt.figure()
@@ -180,12 +228,12 @@ def plot_functional(opt_fom, steps, ranges):
     surf = ax.plot_surface(x1, y1, func_, rstride=1, cstride=1, cmap='hot', linewidth=0, antialiased=False)
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
-    #fig.savefig('3d', format='pdf', bbox_inches="tight")
+    # fig.savefig('3d', format='pdf', bbox_inches="tight")
 
     fig2 = plt.figure()
 
-    number_of_contour_levels= 100
-    cont = plt.contour(x1,y1,func_,number_of_contour_levels)
+    number_of_contour_levels = 100
+    cont = plt.contour(x1, y1, func_, number_of_contour_levels)
 
     fig2.colorbar(cont, shrink=0.5, aspect=5)
     # fig2.savefig('2d', format='pdf', bbox_inches="tight")
